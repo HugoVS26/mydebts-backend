@@ -1,34 +1,44 @@
 name: Code audit
 
-on: push
+on:
+  push:
+  pull_request:
 
 jobs:
   audit:
-    runs-on: ubuntu-latest
     name: Code audit
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Git checkout
+      - name: 'Git checkout'
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-      - name: Check if .editorconfig exists
+      - name: 'Setup Node.js'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 'Check if .editorconfig exists'
         uses: andstor/file-existence-action@v1
         with:
           files: '.editorconfig'
           allow_failure: true
 
-      - name: Ensure node_modules is ignored by Git
+      - name: 'Ensure node_modules is ignored by Git'
         uses: dkershner6/gitignore-parser@v1
         with:
           must_deny: 'node_modules'
 
-      - name: Install modules
+      - name: 'Install dependencies'
         run: npm ci
 
-      - name: ESLint validation
-        run: npx eslint . --max-warnings 0
+      - name: 'ESLint validation'
+        run: NODE_OPTIONS=--experimental-vm-modules npx eslint . --max-warnings 0
 
-      - name: Check commit message length
+      - name: 'Check commit message length'
         uses: gsactions/commit-message-checker@v1
         with:
           pattern: '^[^#].{10,72}'
