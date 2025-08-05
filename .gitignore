@@ -1,0 +1,15 @@
+# Node.js
+node_modules
+dist/
+.env
+*.log
+
+# Testing
+coverage/
+
+# Editor/OS files
+.vscode/
+.DS_Store
+
+# Output
+*.tsbuildinfo

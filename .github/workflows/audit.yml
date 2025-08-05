@@ -1,0 +1,38 @@
+name: Code audit
+
+on: push
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    name: Code audit
+
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v3
+
+      - name: Check if .editorconfig exists
+        uses: andstor/file-existence-action@v1
+        with:
+          files: '.editorconfig'
+          allow_failure: true
+
+      - name: Ensure node_modules is ignored by Git
+        uses: dkershner6/gitignore-parser@v1
+        with:
+          must_deny: 'node_modules'
+
+      - name: Install modules
+        run: npm ci
+
+      - name: ESLint validation
+        run: npx eslint --ignore-path .gitignore . --max-warnings 0
+
+      - name: Check commit message length
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^[^#].{10,72}'
+          error: 'The commit message length must be between 10 and 72 characters'
+          excludeDescription: 'true'
+          excludeTitle: 'true'
+          checkAllCommitMessages: 'true'

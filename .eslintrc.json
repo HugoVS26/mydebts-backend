@@ -1,0 +1,46 @@
+{
+  "env": {
+    "es2021": true,
+    "node": true
+  },
+  "extends": ["xo", "prettier"],
+  "overrides": [
+    {
+      "files": ["*.ts", "*.tsx"],
+      "extends": ["xo-typescript", "prettier"],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "project": "./tsconfig.json",
+        "ecmaVersion": 2020,
+        "sourceType": "module"
+      },
+      "rules": {
+        "@typescript-eslint/consistent-type-definitions": [
+          "error",
+          "interface"
+        ],
+        "@typescript-eslint/no-floating-promises": "error"
+      }
+    },
+    {
+      "files": ["**/model/*.ts"],
+      "rules": {
+        "@typescript-eslint/naming-convention": "off"
+      }
+    }
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "rules": {
+    "no-unused-vars": "error",
+    "new-cap": [
+      "error",
+      {
+        "capIsNewExceptions": ["Router"]
+      }
+    ],
+    "no-implicit-coercion": "off"
+  }
+}
