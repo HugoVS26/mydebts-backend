@@ -1,12 +1,19 @@
-import express from 'express';
+import 'dotenv/config';
+import chalk from 'chalk';
+import debugCreator from 'debug';
+import { startServer } from './server/app.js';
+import { connectToDatabase } from './database/index.js';
+import './server/index.js';
 
-const app = express();
-const port = process.env.PORT || 3000;
+const debug = debugCreator('src:index');
 
-app.get('/', (_req, res) => {
-  res.send('Hello from mydebts-backend!');
-});
+const port = process.env.PORT ?? 4000;
+if (!process.env.MONGODB_URL) {
+  debug(chalk.red('Missing MongoDB String'));
+  process.exit(1);
+}
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
-});
+const mongoUrl = process.env.MONGODB_URL;
+
+await connectToDatabase(mongoUrl);
+startServer(+port);
