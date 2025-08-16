@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import debugCreator from 'debug';
 import { startServer } from './server/app.js';
 import { connectToDatabase } from './database/index.js';
+import './server/index.js';
 
 const debug = debugCreator('src:index');
 
