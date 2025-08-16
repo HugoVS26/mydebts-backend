@@ -3,8 +3,8 @@ import express from 'express';
 import chalk from 'chalk';
 import debugCreator from 'debug';
 
-export const app = express();
 const debug = debugCreator('src:server:app');
+export const app = express();
 
 app.disable('x-powered-by');
 app.use(express.json());
