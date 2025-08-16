@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
-export interface IDebt extends Document {
+export interface IDebt {
+  _id: mongoose.Types.ObjectId;
   debtor: mongoose.Types.ObjectId;
   creditor: mongoose.Types.ObjectId;
   amount: number;
@@ -10,4 +11,25 @@ export interface IDebt extends Document {
   status: 'unpaid' | 'paid' | 'overdue';
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IDebtCreate {
+  debtor: mongoose.Types.ObjectId;
+  creditor: mongoose.Types.ObjectId;
+  amount: number;
+  debtDate: Date;
+  description?: string;
+  dueDate?: Date;
+}
+
+export type DebtFilter = Partial<IDebt>;
+
+export interface IDebtRepository {
+  createDebt(debtData: IDebtCreate): Promise<IDebt>;
+  getDebts(): Promise<IDebt[]>;
+  getDebtsByFilter(filter: DebtFilter, limit?: number): Promise<IDebt[]>;
+  getDebtById(id: string): Promise<IDebt | null>;
+  updateDebt(id: string, updateData: Partial<IDebt>): Promise<IDebt | null>;
+  deleteDebt(id: string): Promise<IDebt | null>;
+  markDebtAsPaid(id: string): Promise<IDebt | null>;
 }
