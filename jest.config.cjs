@@ -1,8 +1,4 @@
-const { createDefaultPreset } = require('ts-jest');
-
-const tsJestTransformCfg = createDefaultPreset().transform;
-
-/** @type {import("jest").Config} **/
+/** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
   preset: 'ts-jest',
   setupFilesAfterEnv: ['./src/setupTests.ts'],
@@ -14,7 +10,11 @@ module.exports = {
     '!src/index.ts',
     '!src/server/app.ts',
     '!src/database/index.ts',
-    '!src/setupTest.ts',
+    '!src/setupTests.ts',
     '!**/node_modules/**',
   ],
+  moduleNameMapper: {
+    '^chalk$': './__mocks__/chalk.ts',
+  },
+  modulePathIgnorePatterns: ['./dist/'],
 };
