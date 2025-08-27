@@ -1,12 +1,12 @@
-import Debt from '../models/debt';
-import { IDebt, IDebtCreate, DebtFilter, IDebtRepository } from '../types';
+import Debt from '../models/debt.js';
+import { IDebt, IDebtCreate, DebtFilter, IDebtRepository } from '../types/debt';
 
 class DebtRepository implements IDebtRepository {
   public async getDebts(): Promise<IDebt[]> {
     return Debt.find({}).sort({ createdAt: -1 }).limit(20).lean().exec();
   }
 
-  public async getDebtsByFilter(filter: DebtFilter): Promise<IDebt[]> {
+  public async getDebtsByFilter(filter: DebtFilter = {}): Promise<IDebt[]> {
     return Debt.find(filter).sort({ createdAt: -1 }).limit(20).lean().exec();
   }
 

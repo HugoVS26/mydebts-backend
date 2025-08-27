@@ -25,10 +25,10 @@ export interface IDebtCreate {
 export type DebtFilter = Partial<IDebt>;
 
 export interface IDebtRepository {
-  createDebt(debtData: IDebtCreate): Promise<IDebt>;
   getDebts(): Promise<IDebt[]>;
   getDebtsByFilter(filter: DebtFilter, limit?: number): Promise<IDebt[]>;
   getDebtById(id: string): Promise<IDebt | null>;
+  createDebt(debtData: IDebtCreate): Promise<IDebt>;
   updateDebt(id: string, updateData: Partial<IDebt>): Promise<IDebt | null>;
   deleteDebt(id: string): Promise<IDebt | null>;
   markDebtAsPaid(id: string): Promise<IDebt | null>;
