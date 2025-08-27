@@ -9,7 +9,7 @@
     "build": "tsc",
     "start": "node .",
     "start:dev": "node --watch .",
-    "start:debug": "cross-env DEBUG=src:* node --watch .",
+    "start:debug": "cross-env node --watch .",
     "test": "jest ",
     "test:dev": "jest --watchAll",
     "test:coverage": "jest --coverage ",
