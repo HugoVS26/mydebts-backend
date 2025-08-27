@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
-import { IDebt } from '../types';
-import debtDateValidator from '../validators/debtDate.validator';
-import dueDateValidator from '../validators/dueDate.validator';
+import { IDebt } from '../types/debt';
+import debtDateValidator from '../validators/debtDate.validator.js';
+import dueDateValidator from '../validators/dueDate.validator.js';
 
 const DebtSchema = new Schema<IDebt>(
   {
@@ -18,7 +18,7 @@ const DebtSchema = new Schema<IDebt>(
     amount: {
       type: Number,
       required: [true, 'Amount is required'],
-      min: [0, 'Amount must be positive'],
+      min: [1, 'Amount must be positive'],
       max: [10000000, 'Amount must be less than 10 million'],
     },
     description: {
