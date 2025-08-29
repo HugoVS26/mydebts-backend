@@ -3,7 +3,7 @@ import nameValidator from '../validators/name.validator';
 import displayNameValidator from '../validators/displayName.validator';
 import emailValidator from '../validators/email.validator';
 import passwordValidator from '../validators/password.validator';
-import { IUser } from '../types';
+import { IUser } from '../types/types';
 
 const UserSchema = new mongoose.Schema<IUser>(
   {

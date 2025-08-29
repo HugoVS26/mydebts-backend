@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { DebtRequestById } from '../../types/requests';
-import { updatedDebtMock } from '../../mocks/debtsMock';
+import { mockedObjectId1, updatedDebtMock } from '../../mocks/debtsMock';
 import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
 import DebtsController from '../DebtsController';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
@@ -17,7 +17,7 @@ describe('Given the updateDebts method in DebtsController', () => {
   };
 
   describe('When it receives a valid debtId in the request params and the debt in the body', () => {
-    const updatedDebtIdMock = updatedDebtMock._id.toString();
+    const updatedDebtIdMock = mockedObjectId1.toString();
 
     const req: Pick<DebtRequestById, 'body' | 'params'> = {
       body: updatedDebtMock,
