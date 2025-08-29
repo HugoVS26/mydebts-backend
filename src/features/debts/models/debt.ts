@@ -1,7 +1,7 @@
 import mongoose, { Schema } from 'mongoose';
 import { IDebt } from '../types/debt';
-import debtDateValidator from '../validators/debtDate.validator.js';
-import dueDateValidator from '../validators/dueDate.validator.js';
+import debtDateValidator from '../validators/schema/debtDate.validator.js';
+import dueDateValidator from '../validators/schema/dueDate.validator.js';
 
 const DebtSchema = new Schema<IDebt>(
   {
@@ -50,7 +50,6 @@ const DebtSchema = new Schema<IDebt>(
   }
 );
 
-// Pre-validate hook for debtor/creditor distinctness
 DebtSchema.pre('validate', function (next) {
   if (
     this.debtor &&

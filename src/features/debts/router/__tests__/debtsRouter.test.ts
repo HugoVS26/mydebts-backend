@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import request from 'supertest';
-import createDebtsRouter from './debtsRouter';
-import { updatedDebtMock } from '../mocks/debtsMock';
+import createDebtsRouter from '../debtsRouter';
+import { newDebtMock, updatedDebtMock } from '../../mocks/debtsMock';
 
 describe('Given a debtsRouter', () => {
   let app: express.Express;
@@ -64,7 +64,7 @@ describe('Given a debtsRouter', () => {
 
   describe('When POST / endpoint receives a request', () => {
     test('Then it should call createDebt method', async () => {
-      await request(app).post('/debts').send(updatedDebtMock).expect(201);
+      await request(app).post('/debts').send(newDebtMock).expect(201);
 
       expect(controllerMock.createDebt).toHaveBeenCalled();
     });

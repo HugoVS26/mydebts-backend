@@ -53,16 +53,18 @@ export const debtsMock: IDebt[] = [
     updatedAt: mockedDate3,
   },
 ];
+export const newDebtMock = {
+  debtor: '64fdf4c1234567890abc1234',
+  creditor: '64fdf4c1234567890abc5678',
+  amount: 500,
+  description: 'Dinner bill',
+  debtDate: new Date().toISOString(),
+  dueDate: new Date(Date.now() + 86400000).toISOString(),
+};
 
-export const updatedDebtMock: IDebt = {
-  _id: mockedObjectId1,
-  debtor: mockedObjectId2,
-  creditor: mockedObjectId3,
-  amount: 40,
-  description: 'Loan payment',
-  debtDate: mockedDate1,
-  dueDate: mockedDate2,
+export const updatedDebtMock = {
+  amount: 600,
+  description: 'Updated dinner bill',
+  dueDate: new Date(Date.now() + 2 * 86400000).toISOString(),
   status: 'unpaid',
-  createdAt: mockedDate1,
-  updatedAt: mockedDate1,
 };
