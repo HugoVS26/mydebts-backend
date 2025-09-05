@@ -2,7 +2,7 @@ import { Response } from 'express';
 import DebtsController from '../DebtsController';
 import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
 import { DebtRequestWithoutId } from '../../types/requests';
-import { debtsMock } from '../../mocks/debtsMock';
+import { debtsMock, mockCreateDebtPayload } from '../../mocks/debtsMock';
 import { IDebtRepository } from '../../types/debt';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
 
@@ -17,33 +17,26 @@ describe('Given the method createDebt in DebtsController', () => {
   };
 
   describe('When it receives a valid request to create a new debt', () => {
-    const debtMock = debtsMock[0];
-
     const req: Pick<DebtRequestWithoutId, 'body'> = {
-      body: debtMock,
+      body: mockCreateDebtPayload,
     };
 
     const debtsMockRepository: Pick<IDebtRepository, 'createDebt'> = {
-      createDebt: jest.fn().mockResolvedValue(debtMock),
+      createDebt: jest.fn().mockResolvedValue(mockCreateDebtPayload),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should call the response status method with a 201 code and the method json with the new debt on it and a message', async () => {
       const expectedStatusCode = 201;
       const expectedJson = {
         message: 'Debt succesfully created!',
-        debt: debtMock,
+        debt: mockCreateDebtPayload,
       };
 
-      await debtsController.createDebt(
-        req as DebtRequestWithoutId,
-        res as Response
-      );
+      await debtsController.createDebt(req as DebtRequestWithoutId, res as Response);
 
-      expect(debtsMockRepository.createDebt).toHaveBeenCalledWith(debtMock);
+      expect(debtsMockRepository.createDebt).toHaveBeenCalledWith(mockCreateDebtPayload);
       expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
       expect(res.json).toHaveBeenCalledWith(expectedJson);
     });
@@ -58,9 +51,7 @@ describe('Given the method createDebt in DebtsController', () => {
       createDebt: jest.fn().mockRejectedValue(new Error('Database error')),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
       const errorMessage = 'Error creating debt';
@@ -68,10 +59,7 @@ describe('Given the method createDebt in DebtsController', () => {
       const expectedStatusCode = 500;
 
       try {
-        await debtsController.createDebt(
-          req as DebtRequestWithoutId,
-          res as Response
-        );
+        await debtsController.createDebt(req as DebtRequestWithoutId, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);

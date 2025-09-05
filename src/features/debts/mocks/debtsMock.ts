@@ -1,15 +1,9 @@
 import mongoose from 'mongoose';
 import { IDebt } from '../types/debt';
 
-export const mockedObjectId1 = new mongoose.Types.ObjectId(
-  '64e52d9f1a2b3c4d5e6f7a01'
-);
-export const mockedObjectId2 = new mongoose.Types.ObjectId(
-  '64e52d9f1a2b3c4d5e6f7a02'
-);
-export const mockedObjectId3 = new mongoose.Types.ObjectId(
-  '64e52d9f1a2b3c4d5e6f7a03'
-);
+export const mockedObjectId1 = new mongoose.Types.ObjectId('64e52d9f1a2b3c4d5e6f7a01');
+export const mockedObjectId2 = new mongoose.Types.ObjectId('64e52d9f1a2b3c4d5e6f7a02');
+export const mockedObjectId3 = new mongoose.Types.ObjectId('64e52d9f1a2b3c4d5e6f7a03');
 
 const mockedDate1 = new Date('2025-01-01T00:00:00.000Z');
 const mockedDate2 = new Date('2025-02-01T00:00:00.000Z');
@@ -54,17 +48,32 @@ export const debtsMock: IDebt[] = [
   },
 ];
 export const newDebtMock = {
-  debtor: '64fdf4c1234567890abc1234',
-  creditor: '64fdf4c1234567890abc5678',
-  amount: 500,
-  description: 'Dinner bill',
-  debtDate: new Date().toISOString(),
-  dueDate: new Date(Date.now() + 86400000).toISOString(),
+  debtor: mockedObjectId2,
+  creditor: mockedObjectId3,
+  amount: 1200,
+  description: 'Vacation expenses loan',
+  debtDate: mockedDate1,
+  dueDate: mockedDate2,
 };
 
 export const updatedDebtMock = {
   amount: 600,
   description: 'Updated dinner bill',
-  dueDate: new Date(Date.now() + 2 * 86400000).toISOString(),
-  status: 'unpaid',
+  dueDate: mockedDate2,
+};
+
+export const updatedDebtMockWithId = {
+  _id: mockedObjectId3,
+  amount: 600,
+  description: 'Updated dinner bill',
+  dueDate: mockedDate2,
+};
+
+export const mockCreateDebtPayload = {
+  debtor: mockedObjectId1,
+  creditor: mockedObjectId2,
+  amount: 100,
+  description: 'Loan payment',
+  debtDate: mockedDate1,
+  dueDate: mockedDate2,
 };
