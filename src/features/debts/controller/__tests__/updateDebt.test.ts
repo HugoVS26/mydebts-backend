@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import { DebtRequestById } from '../../types/requests';
-import { mockedObjectId1, updatedDebtMock } from '../../mocks/debtsMock';
+import { mockedObjectId1, updatedDebtMock, updatedDebtMockWithId } from '../../mocks/debtsMock';
 import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
 import DebtsController from '../DebtsController';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
@@ -17,20 +17,19 @@ describe('Given the updateDebts method in DebtsController', () => {
   };
 
   describe('When it receives a valid debtId in the request params and the debt in the body', () => {
-    const updatedDebtIdMock = mockedObjectId1.toString();
+    const updatedDebtIdMock = updatedDebtMockWithId._id.toString();
 
     const req: Pick<DebtRequestById, 'body' | 'params'> = {
       body: updatedDebtMock,
       params: { debtId: updatedDebtIdMock },
     };
 
-    const debtRepository: Pick<IDebtRepository, 'updateDebt'> = {
+    const debtRepository: Pick<IDebtRepository, 'updateDebt' | 'getDebtById'> = {
+      getDebtById: jest.fn().mockResolvedValue(updatedDebtMockWithId),
       updateDebt: jest.fn().mockResolvedValue(updatedDebtMock),
     };
 
-    const debtController = new DebtsController(
-      debtRepository as DebtsMongooseRepository
-    );
+    const debtController = new DebtsController(debtRepository as DebtsMongooseRepository);
 
     test('Then it should call response response status method with 200 code and json method with the updated debt and a message', async () => {
       const expectedStatusCode = 200;
@@ -43,7 +42,7 @@ describe('Given the updateDebts method in DebtsController', () => {
 
       expect(debtRepository.updateDebt).toHaveBeenCalledWith(
         updatedDebtIdMock,
-        updatedDebtMock
+        expect.objectContaining(updatedDebtMock)
       );
       expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
       expect(res.json).toHaveBeenCalledWith(expectedJson);
@@ -58,13 +57,12 @@ describe('Given the updateDebts method in DebtsController', () => {
       params: { debtId: wrongDebtId },
     };
 
-    const debtRepository: Pick<DebtsMongooseRepository, 'updateDebt'> = {
-      updateDebt: jest.fn().mockResolvedValue(null),
+    const debtRepository: Pick<DebtsMongooseRepository, 'updateDebt' | 'getDebtById'> = {
+      getDebtById: jest.fn().mockResolvedValue(null),
+      updateDebt: jest.fn(),
     };
 
-    const debtsController = new DebtsController(
-      debtRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtRepository as DebtsMongooseRepository);
 
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
       const errorMessage = 'Debt not found';
@@ -72,10 +70,7 @@ describe('Given the updateDebts method in DebtsController', () => {
       const expectedStatusCode = 404;
 
       try {
-        await debtsController.updateDebt(
-          req as DebtRequestById,
-          res as Response
-        );
+        await debtsController.updateDebt(req as DebtRequestById, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);
@@ -96,9 +91,7 @@ describe('Given the updateDebts method in DebtsController', () => {
       updateDebt: jest.fn().mockRejectedValue(wrongDebtId),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
       const errorMessage = 'Error updating debt';
@@ -106,10 +99,7 @@ describe('Given the updateDebts method in DebtsController', () => {
       const expectedStatusCode = 500;
 
       try {
-        await debtsController.updateDebt(
-          req as DebtRequestById,
-          res as Response
-        );
+        await debtsController.updateDebt(req as DebtRequestById, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);

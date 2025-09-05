@@ -15,9 +15,7 @@ describe('Given the method getDebtByFilter in DebtsController', () => {
     getDebtsByFilter: jest.fn().mockResolvedValue(debtsMock),
   };
 
-  const debtsController = new DebtsController(
-    debtsMockRepository as DebtsMongooseRepository
-  );
+  const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
   const res: Pick<Response, 'status' | 'json'> = {
     status: jest.fn().mockReturnThis(),
@@ -26,7 +24,7 @@ describe('Given the method getDebtByFilter in DebtsController', () => {
 
   describe('When it receives a valid filter as query params', () => {
     const filterCondition = { status: 'unpaid' };
-    const req = { query: filterCondition } as DebtRequestByFilter;
+    const req = { query: filterCondition } as unknown as DebtRequestByFilter;
 
     test('Then it should call the response status method with a 200 code and the json method with the filtered debt and a message', async () => {
       const expectedStatusCode = 200;
@@ -37,9 +35,7 @@ describe('Given the method getDebtByFilter in DebtsController', () => {
 
       await debtsController.getDebtsByFilter(req, res as Response);
 
-      expect(debtsMockRepository.getDebtsByFilter).toHaveBeenCalledWith(
-        filterCondition
-      );
+      expect(debtsMockRepository.getDebtsByFilter).toHaveBeenCalledWith(filterCondition);
       expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
       expect(res.json).toHaveBeenCalledWith(expectedJson);
     });
@@ -58,9 +54,7 @@ describe('Given the method getDebtByFilter in DebtsController', () => {
 
       await debtsController.getDebtsByFilter(req, res as Response);
 
-      expect(debtsMockRepository.getDebtsByFilter).toHaveBeenCalledWith(
-        filterCondition
-      );
+      expect(debtsMockRepository.getDebtsByFilter).toHaveBeenCalledWith(filterCondition);
       expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
       expect(res.json).toHaveBeenCalledWith(expectedJson);
     });
