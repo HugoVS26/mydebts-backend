@@ -1,9 +1,7 @@
 import mongoose from 'mongoose';
 
-export interface IDebt {
+export interface IDebtBase {
   _id: mongoose.Types.ObjectId;
-  debtor: mongoose.Types.ObjectId;
-  creditor: mongoose.Types.ObjectId;
   amount: number;
   description?: string;
   debtDate: Date;
@@ -11,6 +9,11 @@ export interface IDebt {
   status: 'unpaid' | 'paid' | 'overdue';
   createdAt: Date;
   updatedAt: Date;
+}
+
+export interface IDebt extends IDebtBase {
+  debtor: mongoose.Types.ObjectId;
+  creditor: mongoose.Types.ObjectId;
 }
 
 export interface IDebtCreate {
@@ -22,14 +25,27 @@ export interface IDebtCreate {
   dueDate?: Date;
 }
 
-export type DebtFilter = Partial<IDebt>;
+export interface IDebtUpdate {
+  amount?: number;
+  description?: string;
+  dueDate?: Date;
+}
+
+export type IDebtFilter = Partial<
+  IDebtBase & { debtor?: mongoose.Types.ObjectId; creditor?: mongoose.Types.ObjectId }
+>;
 
 export interface IDebtRepository {
   getDebts(): Promise<IDebt[]>;
-  getDebtsByFilter(filter: DebtFilter, limit?: number): Promise<IDebt[]>;
+  getDebtsByFilter(filter: IDebtFilter, limit?: number): Promise<IDebt[]>;
   getDebtById(id: string): Promise<IDebt | null>;
   createDebt(debtData: IDebtCreate): Promise<IDebt>;
-  updateDebt(id: string, updateData: Partial<IDebt>): Promise<IDebt | null>;
+  updateDebt(
+    id: string,
+    updateData: Partial<
+      IDebtBase & { debtor?: mongoose.Types.ObjectId; creditor?: mongoose.Types.ObjectId }
+    >
+  ): Promise<IDebt | null>;
   deleteDebt(id: string): Promise<IDebt | null>;
   markDebtAsPaid(id: string): Promise<IDebt | null>;
 }

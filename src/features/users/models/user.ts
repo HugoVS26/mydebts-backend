@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-import nameValidator from '../validators/name.validator';
-import displayNameValidator from '../validators/displayName.validator';
-import emailValidator from '../validators/email.validator';
-import passwordValidator from '../validators/password.validator';
+import nameValidator from '../validators/name.validator.js';
+import displayNameValidator from '../validators/displayName.validator.js';
+import emailValidator from '../validators/email.validator.js';
+import passwordValidator from '../validators/password.validator.js';
 import { IUser } from '../types/types';
 
 const UserSchema = new mongoose.Schema<IUser>(
