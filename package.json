@@ -14,7 +14,7 @@
     "test:dev": "jest --watchAll",
     "test:coverage": "jest --coverage ",
     "lint": "eslint .",
-    "format": "prettier --write",
+    "format": "prettier --write 'src/**/*.{ts,html,,json,md}'",
     "prepare": "husky"
   },
   "keywords": [],
