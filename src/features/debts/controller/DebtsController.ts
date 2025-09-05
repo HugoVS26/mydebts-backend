@@ -1,12 +1,9 @@
 import { Request, Response } from 'express';
-import { IDebtCreate, DebtFilter, IDebtRepository } from '../types/debt';
-import CustomError from '../../../server/middlewares/errors/CustomError/CustomError.js';
-import {
-  DebtRequestByFilter,
-  DebtRequestById,
-  DebtRequestWithoutId,
-} from '../types/requests';
 import mongoose from 'mongoose';
+import { IDebtCreate, IDebtFilter, IDebtRepository, IDebtUpdate } from '../types/debt';
+import CustomError from '../../../server/middlewares/errors/CustomError/CustomError.js';
+import { DebtRequestByFilter, DebtRequestById, DebtRequestWithoutId } from '../types/requests';
+import { updateDebtSchema } from '../validators/request/debtUpdate.schema.js';
 
 class DebtsController {
   constructor(private readonly debtRepository: IDebtRepository) {}
@@ -25,27 +22,18 @@ class DebtsController {
     }
   }
 
-  public async getDebtsByFilter(
-    req: DebtRequestByFilter,
-    res: Response
-  ): Promise<void> {
+  public async getDebtsByFilter(req: DebtRequestByFilter, res: Response): Promise<void> {
     try {
-      const filter: DebtFilter = req.query || {};
+      const filter: IDebtFilter = req.query || {};
       const debts = await this.debtRepository.getDebtsByFilter(filter);
 
-      res
-        .status(200)
-        .json({ message: 'Filtered debts fetched succesfully!', debts });
+      res.status(200).json({ message: 'Filtered debts fetched succesfully!', debts });
     } catch (error) {
       if (error instanceof mongoose.Error.ValidationError) {
         throw error;
       }
 
-      this.handleError(
-        error,
-        'Error filtering debts',
-        'Could not filter debts'
-      );
+      this.handleError(error, 'Error filtering debts', 'Could not filter debts');
     }
   }
 
@@ -68,22 +56,24 @@ class DebtsController {
     }
   }
 
-  public async createDebt(
-    req: DebtRequestWithoutId,
-    res: Response
-  ): Promise<void> {
+  public async createDebt(req: DebtRequestWithoutId, res: Response): Promise<void> {
     try {
-      const debtData: IDebtCreate = req.body;
+      const { debtor, creditor, amount, debtDate, dueDate, description } = req.body;
+
+      const debtData: IDebtCreate = {
+        debtor: new mongoose.Types.ObjectId(debtor),
+        creditor: new mongoose.Types.ObjectId(creditor),
+        amount,
+        description,
+        debtDate: new Date(debtDate),
+        dueDate: dueDate ? new Date(dueDate) : undefined,
+      };
+
       const newDebt = await this.debtRepository.createDebt(debtData);
 
-      res
-        .status(201)
-        .json({ message: 'Debt succesfully created!', debt: newDebt });
+      res.status(201).json({ message: 'Debt succesfully created!', debt: newDebt });
     } catch (error) {
-      if (error instanceof mongoose.Error.ValidationError) {
-        throw error;
-      }
-
+      if (error instanceof mongoose.Error.ValidationError) throw error;
       this.handleError(error, 'Error creating debt', 'Could not create debt');
     }
   }
@@ -91,19 +81,26 @@ class DebtsController {
   public async updateDebt(req: DebtRequestById, res: Response): Promise<void> {
     try {
       const { debtId } = req.params;
-      const debtData: Partial<IDebtCreate> = req.body;
-      const updatedDebt = await this.debtRepository.updateDebt(
-        debtId,
-        debtData
-      );
 
-      if (!updatedDebt) {
+      const existingDebt = await this.debtRepository.getDebtById(debtId);
+
+      if (!existingDebt) {
         throw new CustomError('Debt not found', 404, 'Debt not found');
       }
 
-      res
-        .status(200)
-        .json({ message: 'Debt succesfully updated!', debt: updatedDebt });
+      await updateDebtSchema.validateAsync(req.body, {
+        context: { debtDate: existingDebt.debtDate },
+      });
+
+      const debtData: IDebtUpdate = {
+        amount: req.body.amount,
+        description: req.body.description,
+        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
+      };
+
+      const updatedDebt = await this.debtRepository.updateDebt(debtId, debtData);
+
+      res.status(200).json({ message: 'Debt succesfully updated!', debt: updatedDebt });
     } catch (error) {
       if (error instanceof mongoose.Error.ValidationError) {
         throw error;
@@ -122,9 +119,7 @@ class DebtsController {
         throw new CustomError('Debt not found', 404, 'Debt not found');
       }
 
-      res
-        .status(200)
-        .json({ message: 'Debt succesfully deleted!', debt: deletedDebt });
+      res.status(200).json({ message: 'Debt succesfully deleted!', debt: deletedDebt });
     } catch (error) {
       if (error instanceof mongoose.Error.ValidationError) {
         throw error;
@@ -134,10 +129,7 @@ class DebtsController {
     }
   }
 
-  public async markDebtAsPaid(
-    req: DebtRequestById,
-    res: Response
-  ): Promise<void> {
+  public async markDebtAsPaid(req: DebtRequestById, res: Response): Promise<void> {
     try {
       const { debtId } = req.params;
       const updatedDebt = await this.debtRepository.markDebtAsPaid(debtId);
@@ -146,19 +138,13 @@ class DebtsController {
         throw new CustomError('Debt not found', 404, 'Debt not found');
       }
 
-      res
-        .status(200)
-        .json({ message: 'Debt succesfully marked!', debt: updatedDebt });
+      res.status(200).json({ message: 'Debt succesfully marked!', debt: updatedDebt });
     } catch (error) {
       if (error instanceof mongoose.Error.ValidationError) {
         throw error;
       }
 
-      this.handleError(
-        error,
-        'Error marking debt',
-        'Could not update debt status'
-      );
+      this.handleError(error, 'Error marking debt', 'Could not update debt status');
     }
   }
 
