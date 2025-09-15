@@ -4,7 +4,7 @@ export interface IUser extends mongoose.Document {
   _id: mongoose.Types.ObjectId;
   firstName: string;
   lastName: string;
-  displayName?: string;
+  displayName: string;
   email: string;
   password?: string;
   role: 'user' | 'admin';

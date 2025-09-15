@@ -23,8 +23,10 @@ const DebtSchema = new Schema<IDebt>(
     },
     description: {
       type: String,
+      required: [true, 'Description is required'],
       trim: true,
-      maxlength: [200, 'Description must be under 200 characters'],
+      min: [1, 'Description must have 1 character at least'],
+      maxlength: [100, 'Description must be under 200 characters'],
     },
     debtDate: {
       type: Date,
@@ -51,11 +53,7 @@ const DebtSchema = new Schema<IDebt>(
 );
 
 DebtSchema.pre('validate', function (next) {
-  if (
-    this.debtor &&
-    this.creditor &&
-    this.debtor.toString() === this.creditor.toString()
-  ) {
+  if (this.debtor && this.creditor && this.debtor.toString() === this.creditor.toString()) {
     this.invalidate('creditor', 'Debtor and creditor must be different users.');
   }
   next();

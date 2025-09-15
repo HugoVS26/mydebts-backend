@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 export interface IDebtBase {
   _id: mongoose.Types.ObjectId;
   amount: number;
-  description?: string;
+  description: string;
   debtDate: Date;
   dueDate?: Date;
   status: 'unpaid' | 'paid' | 'overdue';
@@ -21,13 +21,13 @@ export interface IDebtCreate {
   creditor: mongoose.Types.ObjectId;
   amount: number;
   debtDate: Date;
-  description?: string;
+  description: string;
   dueDate?: Date;
 }
 
 export interface IDebtUpdate {
   amount?: number;
-  description?: string;
+  description: string;
   dueDate?: Date;
 }
 
