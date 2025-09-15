@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
 import nameValidator from '../validators/name.validator.js';
-import displayNameValidator from '../validators/displayName.validator.js';
 import emailValidator from '../validators/email.validator.js';
 import passwordValidator from '../validators/password.validator.js';
 import { IUser } from '../types/types';
@@ -25,10 +24,7 @@ const UserSchema = new mongoose.Schema<IUser>(
     },
     displayName: {
       type: String,
-      trim: true,
-      minlength: [3, 'Display name must be at least 3 characters'],
-      maxlength: [42, 'Display name must be at most 42 characters'],
-      validate: displayNameValidator,
+      required: true,
     },
     email: {
       type: String,
@@ -62,5 +58,12 @@ const UserSchema = new mongoose.Schema<IUser>(
     versionKey: false,
   }
 );
+
+UserSchema.pre<IUser>('save', function (next) {
+  if (this.firstName && this.lastName) {
+    this.displayName = `${this.firstName} ${this.lastName.charAt(0).toUpperCase()}.`;
+  }
+  next();
+});
 
 export default mongoose.model<IUser>('User', UserSchema);
