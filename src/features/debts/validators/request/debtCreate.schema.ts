@@ -19,8 +19,9 @@ export const createDebtSchema = Joi.object({
     'number.max': 'Amount must be less than 10 million',
   }),
 
-  description: Joi.string().trim().max(200).messages({
-    'string.max': 'Description must be under 200 characters',
+  description: Joi.string().trim().min(1).max(100).messages({
+    'string.min': 'Description must have more than 1 character',
+    'string.max': 'Description must be under 100 characters',
   }),
 
   debtDate: Joi.date().required().max('now').messages({
@@ -36,12 +37,9 @@ export const createDebtSchema = Joi.object({
     otherwise: Joi.date(),
   }),
 
-  status: Joi.string()
-    .valid('unpaid', 'paid', 'overdue')
-    .default('unpaid')
-    .messages({
-      'any.only': 'Status must be either unpaid, paid, or overdue',
-    }),
+  status: Joi.string().valid('unpaid', 'paid', 'overdue').default('unpaid').messages({
+    'any.only': 'Status must be either unpaid, paid, or overdue',
+  }),
 })
   .custom((value, helpers) => {
     if (value.debtor && value.creditor && value.debtor === value.creditor) {

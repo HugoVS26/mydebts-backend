@@ -7,7 +7,8 @@ export const updateDebtSchema = Joi.object({
   }),
 
   description: Joi.string().max(200).messages({
-    'string.max': 'Description must be under 200 characters',
+    'string.min': 'Description must have more than 1 characters',
+    'string.max': 'Description must be under 100 characters',
   }),
 
   dueDate: Joi.date().when('debtDate', {
