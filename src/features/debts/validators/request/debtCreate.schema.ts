@@ -28,11 +28,10 @@ export const createDebtSchema = Joi.object({
     .max('now')
     .default(() => {
       const todayDate = new Date();
-      todayDate.setHours(0, 0, 0, 0);
+      todayDate.setUTCHours(0, 0, 0, 0);
       return todayDate;
     })
     .messages({
-      'any.required': 'Debt date is required',
       'date.max': 'Debt date cannot be in the future',
     }),
 
