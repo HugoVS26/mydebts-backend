@@ -1,13 +1,10 @@
 import { ValidatorProps } from 'mongoose';
 
-const debtDateValidator = {
-  validator: (value: Date): boolean => {
-    if (!value) return false;
-    const now = new Date();
-    return value <= now;
-  },
-  message: (props: ValidatorProps) =>
-    `${props.value} is not a valid debt date. It cannot be in the future.`,
+export const debtDateValidator = (value?: Date): boolean => {
+  if (!value) return true;
+  const now = new Date();
+  return value <= now;
 };
 
-export default debtDateValidator;
+export const debtDateValidatorMessage = (props: ValidatorProps) =>
+  `${props.value} is not a valid debt date. It cannot be in the future.`;

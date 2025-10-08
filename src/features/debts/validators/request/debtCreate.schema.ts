@@ -24,17 +24,19 @@ export const createDebtSchema = Joi.object({
     'string.max': 'Description must be under 100 characters',
   }),
 
-  debtDate: Joi.date().required().max('now').messages({
-    'any.required': 'Debt date is required',
-    'date.max': 'Debt date cannot be in the future',
-  }),
-
-  dueDate: Joi.date().when('debtDate', {
-    is: Joi.exist(),
-    then: Joi.date().min(Joi.ref('debtDate')).messages({
-      'date.min': 'Due date must be equal to or after the debt date',
+  debtDate: Joi.date()
+    .max('now')
+    .default(() => {
+      const todayDate = new Date();
+      todayDate.setUTCHours(0, 0, 0, 0);
+      return todayDate;
+    })
+    .messages({
+      'date.max': 'Debt date cannot be in the future',
     }),
-    otherwise: Joi.date(),
+
+  dueDate: Joi.date().min(Joi.ref('debtDate')).messages({
+    'date.min': 'Due date must be equal to or after the debt date',
   }),
 
   status: Joi.string().valid('unpaid', 'paid', 'overdue').default('unpaid').messages({

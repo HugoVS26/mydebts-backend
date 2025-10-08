@@ -4,6 +4,7 @@ import { IDebtCreate, IDebtFilter, IDebtRepository, IDebtUpdate } from '../types
 import CustomError from '../../../server/middlewares/errors/CustomError/CustomError.js';
 import { DebtRequestByFilter, DebtRequestById, DebtRequestWithoutId } from '../types/requests';
 import { updateDebtSchema } from '../validators/request/debtUpdate.schema.js';
+import Joi from 'joi';
 
 class DebtsController {
   constructor(private readonly debtRepository: IDebtRepository) {}
@@ -58,15 +59,31 @@ class DebtsController {
 
   public async createDebt(req: DebtRequestWithoutId, res: Response): Promise<void> {
     try {
-      const { debtor, creditor, amount, debtDate, dueDate, description } = req.body;
+      const {
+        debtor,
+        creditor,
+        amount,
+        debtDate: debtDateInput,
+        dueDate: dueDateInput,
+        description,
+      } = req.body;
+
+      const debtDate = debtDateInput ? new Date(debtDateInput) : new Date();
+      debtDate.setUTCHours(0, 0, 0, 0);
+
+      let dueDate: Date | undefined;
+      if (dueDateInput) {
+        dueDate = new Date(dueDateInput);
+        dueDate.setUTCHours(0, 0, 0, 0);
+      }
 
       const debtData: IDebtCreate = {
         debtor: new mongoose.Types.ObjectId(debtor),
         creditor: new mongoose.Types.ObjectId(creditor),
         amount,
         description,
-        debtDate: new Date(debtDate),
-        dueDate: dueDate ? new Date(dueDate) : undefined,
+        debtDate,
+        dueDate,
       };
 
       const newDebt = await this.debtRepository.createDebt(debtData);
@@ -83,29 +100,37 @@ class DebtsController {
       const { debtId } = req.params;
 
       const existingDebt = await this.debtRepository.getDebtById(debtId);
-
-      if (!existingDebt) {
-        throw new CustomError('Debt not found', 404, 'Debt not found');
-      }
+      if (!existingDebt) throw new CustomError('Debt not found', 404, 'Debt not found');
 
       await updateDebtSchema.validateAsync(req.body, {
         context: { debtDate: existingDebt.debtDate },
+        abortEarly: false,
       });
 
-      const debtData: IDebtUpdate = {
-        amount: req.body.amount,
-        description: req.body.description,
-        dueDate: req.body.dueDate ? new Date(req.body.dueDate) : undefined,
-      };
+      let dueDate: Date | undefined;
+      if (req.body.dueDate) {
+        dueDate = new Date(req.body.dueDate);
+        dueDate.setUTCHours(0, 0, 0, 0);
+      }
+
+      const debtData: Partial<IDebtUpdate> = {};
+      if (req.body.amount !== undefined) debtData.amount = req.body.amount;
+      if (req.body.description !== undefined) debtData.description = req.body.description;
+      if (dueDate !== undefined) debtData.dueDate = dueDate;
 
       const updatedDebt = await this.debtRepository.updateDebt(debtId, debtData);
 
       res.status(200).json({ message: 'Debt succesfully updated!', debt: updatedDebt });
     } catch (error) {
-      if (error instanceof mongoose.Error.ValidationError) {
-        throw error;
+      if (error instanceof Joi.ValidationError) {
+        throw new CustomError(
+          'Validation failed',
+          400,
+          error.details.map((d) => d.message).join('; ')
+        );
       }
 
+      if (error instanceof mongoose.Error.ValidationError) throw error;
       this.handleError(error, 'Error updating debt', 'Could not update debt');
     }
   }
