@@ -58,15 +58,31 @@ class DebtsController {
 
   public async createDebt(req: DebtRequestWithoutId, res: Response): Promise<void> {
     try {
-      const { debtor, creditor, amount, debtDate, dueDate, description } = req.body;
+      const {
+        debtor,
+        creditor,
+        amount,
+        debtDate: debtDateInput,
+        dueDate: dueDateInput,
+        description,
+      } = req.body;
+
+      const debtDate = debtDateInput ? new Date(debtDateInput) : new Date();
+      debtDate.setHours(0, 0, 0, 0);
+
+      let dueDate: Date | undefined;
+      if (dueDateInput) {
+        dueDate = new Date(dueDateInput);
+        dueDate.setHours(0, 0, 0, 0);
+      }
 
       const debtData: IDebtCreate = {
         debtor: new mongoose.Types.ObjectId(debtor),
         creditor: new mongoose.Types.ObjectId(creditor),
         amount,
         description,
-        debtDate: new Date(debtDate),
-        dueDate: dueDate ? new Date(dueDate) : undefined,
+        debtDate,
+        dueDate,
       };
 
       const newDebt = await this.debtRepository.createDebt(debtData);

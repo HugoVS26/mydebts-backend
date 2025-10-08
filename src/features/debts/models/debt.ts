@@ -1,6 +1,10 @@
 import mongoose, { Schema } from 'mongoose';
 import { IDebt } from '../types/debt';
-import debtDateValidator from '../validators/schema/debtDate.validator.js';
+
+import {
+  debtDateValidator,
+  debtDateValidatorMessage,
+} from '../validators/schema/debtDate.validator.js';
 import dueDateValidator from '../validators/schema/dueDate.validator.js';
 
 const DebtSchema = new Schema<IDebt>(
@@ -30,8 +34,11 @@ const DebtSchema = new Schema<IDebt>(
     },
     debtDate: {
       type: Date,
-      required: [true, 'Debt date is required'],
-      validate: debtDateValidator,
+      default: Date.now,
+      validate: {
+        validator: debtDateValidator,
+        message: debtDateValidatorMessage,
+      },
     },
     dueDate: {
       type: Date,
@@ -52,7 +59,7 @@ const DebtSchema = new Schema<IDebt>(
   }
 );
 
-DebtSchema.pre('validate', function (next) {
+DebtSchema.pre('validate', function (this: IDebt & mongoose.Document, next) {
   if (this.debtor && this.creditor && this.debtor.toString() === this.creditor.toString()) {
     this.invalidate('creditor', 'Debtor and creditor must be different users.');
   }

@@ -20,7 +20,7 @@ export interface IDebtCreate {
   debtor: mongoose.Types.ObjectId;
   creditor: mongoose.Types.ObjectId;
   amount: number;
-  debtDate: Date;
+  debtDate?: Date;
   description: string;
   dueDate?: Date;
 }
