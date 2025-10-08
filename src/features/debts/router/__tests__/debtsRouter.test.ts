@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import request from 'supertest';
 import createDebtsRouter from '../debtsRouter';
-import { newDebtMock, updatedDebtMock } from '../../mocks/debtsMock';
+import { newDebtMock, updatedDebtMockRouter } from '../../mocks/debtsMock';
 
 describe('Given a debtsRouter', () => {
   let app: express.Express;
@@ -10,9 +10,7 @@ describe('Given a debtsRouter', () => {
 
   beforeEach(() => {
     controllerMock = {
-      getDebts: jest.fn((_req: Request, res: Response) =>
-        res.status(200).json({ message: 'ok' })
-      ),
+      getDebts: jest.fn((_req: Request, res: Response) => res.status(200).json({ message: 'ok' })),
       getDebtsByFilter: jest.fn((_req: Request, res: Response) =>
         res.status(200).json({ message: 'ok' })
       ),
@@ -72,10 +70,7 @@ describe('Given a debtsRouter', () => {
 
   describe('When PUT /:debtId endpoint receives a request', () => {
     test('Then it should call updateDebt method', async () => {
-      await request(app)
-        .put(`/debts/${debtIdMock}`)
-        .send(updatedDebtMock)
-        .expect(200);
+      await request(app).put(`/debts/${debtIdMock}`).send(updatedDebtMockRouter).expect(200);
 
       expect(controllerMock.updateDebt).toHaveBeenCalled();
     });

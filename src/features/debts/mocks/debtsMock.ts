@@ -6,7 +6,9 @@ export const mockedObjectId2 = new mongoose.Types.ObjectId('64e52d9f1a2b3c4d5e6f
 export const mockedObjectId3 = new mongoose.Types.ObjectId('64e52d9f1a2b3c4d5e6f7a03');
 
 const mockedDate1 = new Date('2025-01-01T00:00:00.000Z');
+
 const mockedDate2 = new Date('2025-02-01T00:00:00.000Z');
+
 const mockedDate3 = new Date('2025-03-01T00:00:00.000Z');
 
 export const debtsMock: IDebt[] = [
@@ -59,14 +61,20 @@ export const newDebtMock = {
 export const updatedDebtMock = {
   amount: 600,
   description: 'Updated dinner bill',
-  dueDate: mockedDate2,
+  dueDate: new Date('2025-02-01T00:00:00.000Z'),
+};
+
+export const updatedDebtMockRouter = {
+  amount: 600,
+  description: 'Updated dinner bill',
 };
 
 export const updatedDebtMockWithId = {
   _id: mockedObjectId3,
   amount: 600,
   description: 'Updated dinner bill',
-  dueDate: mockedDate2,
+  debtDate: new Date('2025-02-01T00:00:00.000Z'),
+  dueDate: new Date('2025-02-01T00:00:00.000Z'),
 };
 
 export const mockCreateDebtPayload = {
