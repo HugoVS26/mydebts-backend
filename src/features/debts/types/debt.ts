@@ -12,13 +12,13 @@ export interface IDebtBase {
 }
 
 export interface IDebt extends IDebtBase {
-  debtor: mongoose.Types.ObjectId;
-  creditor: mongoose.Types.ObjectId;
+  debtor: mongoose.Types.ObjectId | string;
+  creditor: mongoose.Types.ObjectId | string;
 }
 
 export interface IDebtCreate {
-  debtor: mongoose.Types.ObjectId;
-  creditor: mongoose.Types.ObjectId;
+  debtor: mongoose.Types.ObjectId | string;
+  creditor: mongoose.Types.ObjectId | string;
   amount: number;
   debtDate?: Date;
   description: string;

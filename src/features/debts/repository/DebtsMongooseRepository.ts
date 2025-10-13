@@ -6,18 +6,13 @@ class DebtRepository implements IDebtRepository {
   private populateFields = '_id firstName lastName displayName email role';
 
   public async getDebts(): Promise<IDebt[]> {
-    try {
-      return await Debt.find({})
-        .sort({ createdAt: -1 })
-        .limit(20)
-        .populate('debtor', this.populateFields)
-        .populate('creditor', this.populateFields)
-        .lean()
-        .exec();
-    } catch (err) {
-      console.error('getDebts error:', err);
-      throw err;
-    }
+    return await Debt.find({})
+      .sort({ createdAt: -1 })
+      .limit(20)
+      .populate('debtor', this.populateFields)
+      .populate('creditor', this.populateFields)
+      .lean()
+      .exec();
   }
 
   public async getDebtsByFilter(filter: IDebtFilter = {}): Promise<IDebt[]> {
