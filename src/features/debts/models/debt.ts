@@ -10,12 +10,12 @@ import dueDateValidator from '../validators/schema/dueDate.validator.js';
 const DebtSchema = new Schema<IDebt>(
   {
     debtor: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.Mixed,
       ref: 'User',
       required: [true, 'Debtor is required'],
     },
     creditor: {
-      type: Schema.Types.ObjectId,
+      type: Schema.Types.Mixed,
       ref: 'User',
       required: [true, 'Creditor is required'],
     },
