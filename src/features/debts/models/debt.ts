@@ -11,12 +11,10 @@ const DebtSchema = new Schema<IDebt>(
   {
     debtor: {
       type: Schema.Types.Mixed,
-      ref: 'User',
       required: [true, 'Debtor is required'],
     },
     creditor: {
       type: Schema.Types.Mixed,
-      ref: 'User',
       required: [true, 'Creditor is required'],
     },
     amount: {
