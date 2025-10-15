@@ -1,16 +1,27 @@
 import Joi from 'joi';
+import mongoose from 'mongoose';
+
+const objectIdOrString = Joi.string()
+  .required()
+  .custom((value, helpers) => {
+    if (mongoose.Types.ObjectId.isValid(value) && value.length === 24) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim().length > 0) {
+      return value;
+    }
+    return helpers.error('string.invalid');
+  }, 'ObjectId or Name validation');
 
 export const createDebtSchema = Joi.object({
-  debtor: Joi.string().required().hex().length(24).messages({
+  debtor: objectIdOrString.messages({
     'any.required': 'Debtor is required',
-    'string.hex': 'Debtor must be a valid MongoDB ObjectId',
-    'string.length': 'Debtor must be 24 characters long',
+    'string.invalid': 'Debtor must be either a valid MongoDB ObjectId or a name',
   }),
 
-  creditor: Joi.string().required().hex().length(24).messages({
+  creditor: objectIdOrString.messages({
     'any.required': 'Creditor is required',
-    'string.hex': 'Creditor must be a valid MongoDB ObjectId',
-    'string.length': 'Creditor must be 24 characters long',
+    'string.invalid': 'Creditor must be either a valid MongoDB ObjectId or a name',
   }),
 
   amount: Joi.number().required().min(1).max(10_000_000).messages({
@@ -44,7 +55,12 @@ export const createDebtSchema = Joi.object({
   }),
 })
   .custom((value, helpers) => {
-    if (value.debtor && value.creditor && value.debtor === value.creditor) {
+    const isDebtorObjectId =
+      mongoose.Types.ObjectId.isValid(value.debtor) && value.debtor.length === 24;
+    const isCreditorObjectId =
+      mongoose.Types.ObjectId.isValid(value.creditor) && value.creditor.length === 24;
+
+    if (isDebtorObjectId && isCreditorObjectId && value.debtor === value.creditor) {
       return helpers.error('any.invalid', {
         message: 'Debtor and creditor must be different users.',
       });

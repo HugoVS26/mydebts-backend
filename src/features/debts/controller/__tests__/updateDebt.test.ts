@@ -34,7 +34,7 @@ describe('Given the updateDebts method in DebtsController', () => {
     test('Then it should call response response status method with 200 code and json method with the updated debt and a message', async () => {
       const expectedStatusCode = 200;
       const expectedJson = {
-        message: 'Debt succesfully updated!',
+        message: 'Debt successfully updated!',
         debt: updatedDebtMock,
       };
 
