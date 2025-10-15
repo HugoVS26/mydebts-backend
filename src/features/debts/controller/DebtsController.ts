@@ -77,9 +77,17 @@ class DebtsController {
         dueDate.setUTCHours(0, 0, 0, 0);
       }
 
+      const debtorValue = mongoose.Types.ObjectId.isValid(debtor)
+        ? new mongoose.Types.ObjectId(debtor)
+        : debtor;
+
+      const creditorValue = mongoose.Types.ObjectId.isValid(creditor)
+        ? new mongoose.Types.ObjectId(creditor)
+        : creditor;
+
       const debtData: IDebtCreate = {
-        debtor: new mongoose.Types.ObjectId(debtor),
-        creditor: new mongoose.Types.ObjectId(creditor),
+        debtor: debtorValue,
+        creditor: creditorValue,
         amount,
         description,
         debtDate,
@@ -103,9 +111,24 @@ class DebtsController {
       if (!existingDebt) throw new CustomError('Debt not found', 404, 'Debt not found');
 
       await updateDebtSchema.validateAsync(req.body, {
-        context: { debtDate: existingDebt.debtDate },
         abortEarly: false,
       });
+
+      if (req.body.dueDate) {
+        const dueDate = new Date(req.body.dueDate);
+        dueDate.setUTCHours(0, 0, 0, 0);
+
+        const debtDate = new Date(existingDebt.debtDate);
+        debtDate.setUTCHours(0, 0, 0, 0);
+
+        if (dueDate < debtDate) {
+          throw new CustomError(
+            'Validation failed',
+            400,
+            'Due date must be equal to or after the debt date'
+          );
+        }
+      }
 
       let dueDate: Date | undefined;
       if (req.body.dueDate) {
@@ -120,7 +143,7 @@ class DebtsController {
 
       const updatedDebt = await this.debtRepository.updateDebt(debtId, debtData);
 
-      res.status(200).json({ message: 'Debt succesfully updated!', debt: updatedDebt });
+      res.status(200).json({ message: 'Debt successfully updated!', debt: updatedDebt });
     } catch (error) {
       if (error instanceof Joi.ValidationError) {
         throw new CustomError(
