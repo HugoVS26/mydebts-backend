@@ -57,11 +57,4 @@ const DebtSchema = new Schema<IDebt>(
   }
 );
 
-DebtSchema.pre('validate', function (this: IDebt & mongoose.Document, next) {
-  if (this.debtor && this.creditor && this.debtor.toString() === this.creditor.toString()) {
-    this.invalidate('creditor', 'Debtor and creditor must be different users.');
-  }
-  next();
-});
-
 export default mongoose.model<IDebt>('Debt', DebtSchema);

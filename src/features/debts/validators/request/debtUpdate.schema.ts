@@ -11,7 +11,7 @@ export const updateDebtSchema = Joi.object({
     'string.max': 'Description must be under 100 characters',
   }),
 
-  dueDate: Joi.date().min(Joi.ref('$debtDate')).messages({
+  dueDate: Joi.date().messages({
     'date.min': 'Due date must be equal to or after the debt date',
   }),
 })
