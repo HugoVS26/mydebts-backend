@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcrypt';
 import nameValidator from '../validators/name.validator.js';
 import emailValidator from '../validators/email.validator.js';
 import passwordValidator from '../validators/password.validator.js';
@@ -24,7 +25,7 @@ const UserSchema = new mongoose.Schema<IUser>(
     },
     displayName: {
       type: String,
-      required: true,
+      required: false,
     },
     email: {
       type: String,
@@ -59,11 +60,31 @@ const UserSchema = new mongoose.Schema<IUser>(
   }
 );
 
-UserSchema.pre<IUser>('save', function (next) {
+UserSchema.pre('save', function (next) {
   if (this.firstName && this.lastName) {
     this.displayName = `${this.firstName} ${this.lastName.charAt(0).toUpperCase()}.`;
   }
   next();
 });
+
+UserSchema.pre('save', async function (next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    if (this.password) {
+      this.password = await bcrypt.hash(this.password, salt);
+    }
+    next();
+  } catch (error) {
+    next(error as Error);
+  }
+});
+
+UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+  return bcrypt.compare(candidatePassword, this.password);
+};
 
 export default mongoose.model<IUser>('User', UserSchema);
