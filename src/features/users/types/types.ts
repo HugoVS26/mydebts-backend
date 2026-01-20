@@ -10,6 +10,7 @@ export interface IUser extends mongoose.Document {
   role: 'user' | 'admin';
   createdAt: Date;
   updatedAt: Date;
+  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 export type IUserSummary = Pick<IUser, '_id' | 'firstName' | 'lastName' | 'displayName'>;
