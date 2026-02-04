@@ -13,7 +13,7 @@ export interface LoginRequest {
 export interface AuthResponse {
   token: string;
   user: {
-    id: string;
+    _id: string;
     firstName: string;
     lastName: string;
     displayName: string;
