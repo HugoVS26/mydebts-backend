@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { RegisterRequest, LoginRequest } from '../types/requests';
+import { RegisterRequest, LoginRequest, AuthResponse } from '../types/requests';
 
 export const mockUser = {
   _id: new mongoose.Types.ObjectId('676f1234567890abcdef1234'),
@@ -53,10 +53,10 @@ export const mockJwtPayload = {
   role: mockUser.role,
 };
 
-export const mockAuthResponse = {
+export const mockAuthResponse: AuthResponse = {
   token: mockJwtToken,
   user: {
-    id: mockUser._id.toString(),
+    _id: mockUser._id.toString(),
     firstName: mockUser.firstName,
     lastName: mockUser.lastName,
     displayName: mockUser.displayName,
