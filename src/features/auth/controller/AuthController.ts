@@ -1,23 +1,23 @@
 import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+
 import User from '../../users/models/user.js';
 import { RegisterRequest, LoginRequest, AuthResponse } from '../types/requests';
 import { IUser } from '../../users/types/types';
 import CustomError from '../../../server/middlewares/errors/CustomError/CustomError.js';
+import { AuthRequest } from '../middlewares/authMiddleware.js';
 
 export class AuthController {
   public async register(req: Request<{}, {}, RegisterRequest>, res: Response): Promise<void> {
     try {
       const { firstName, lastName, email, password } = req.body;
 
-      // Check if user exists
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         throw new CustomError('Email already registered', 409, 'Email already in use');
       }
 
-      // Create user (displayName + password hashing handled by pre-save hooks)
       const user = await User.create({
         firstName,
         lastName,
@@ -25,7 +25,6 @@ export class AuthController {
         password,
       });
 
-      // Generate token and response
       const authResponse = this.generateAuthResponse(user);
 
       res.status(201).json(authResponse);
@@ -42,19 +41,16 @@ export class AuthController {
     try {
       const { email, password } = req.body;
 
-      // Find user and include password field
       const user = await User.findOne({ email }).select('+password');
       if (!user) {
         throw new CustomError('Invalid credentials', 401, 'Invalid email or password');
       }
 
-      // Verify password
       const isValidPassword = await user.comparePassword(password);
       if (!isValidPassword) {
         throw new CustomError('Invalid credentials', 401, 'Invalid email or password');
       }
 
-      // Generate token and response
       const authResponse = this.generateAuthResponse(user);
 
       res.status(200).json(authResponse);
@@ -64,6 +60,33 @@ export class AuthController {
       }
 
       this.handleError(error, 'Error logging in', 'Could not authenticate user', 401);
+    }
+  }
+
+  public async me(req: AuthRequest, res: Response): Promise<void> {
+    try {
+      const userId = req.userId;
+
+      if (!userId) {
+        throw new CustomError('User not authenticated', 401, 'Authentication required');
+      }
+
+      const user = await User.findById(userId).select('-password');
+
+      if (!user) {
+        throw new CustomError('User not found', 404, 'User account not found');
+      }
+
+      res.status(200).json({
+        _id: user._id.toString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        displayName: user.displayName,
+        email: user.email,
+        role: user.role,
+      });
+    } catch (error) {
+      this.handleError(error, 'Error fetching user', 'Could not retrieve user information');
     }
   }
 
@@ -85,7 +108,7 @@ export class AuthController {
     return {
       token,
       user: {
-        id: user._id.toString(),
+        _id: user._id.toString(),
         firstName: user.firstName,
         lastName: user.lastName,
         displayName: user.displayName,

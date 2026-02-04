@@ -9,6 +9,7 @@ import {
   mockLoginPayload,
   mockJwtToken,
   mockAuthResponse,
+  mockJwtPayload,
 } from '../../mocks/authMock';
 
 jest.mock('../../../users/models/user');
@@ -216,6 +217,52 @@ describe('Given the authRouter', () => {
           }),
         ])
       );
+    });
+  });
+
+  describe('When GET /auth/me endpoint is called with valid token', () => {
+    test('Then it should return 200 status and user data', async () => {
+      const expectedStatusCode = 200;
+
+      const jwt = require('jsonwebtoken');
+      jwt.verify = jest.fn().mockReturnValue(mockJwtPayload);
+
+      (User.findById as jest.Mock).mockReturnValue({
+        select: jest.fn().mockResolvedValue({
+          _id: mockUser._id,
+          firstName: mockUser.firstName,
+          lastName: mockUser.lastName,
+          displayName: mockUser.displayName,
+          email: mockUser.email,
+          role: mockUser.role,
+        }),
+      });
+
+      const response = await request(app)
+        .get('/auth/me')
+        .set('Authorization', `Bearer ${mockJwtToken}`);
+
+      expect(response.status).toBe(expectedStatusCode);
+      expect(response.body).toEqual({
+        _id: mockUser._id.toString(),
+        firstName: mockUser.firstName,
+        lastName: mockUser.lastName,
+        displayName: mockUser.displayName,
+        email: mockUser.email,
+        role: mockUser.role,
+      });
+      expect(response.body).not.toHaveProperty('password');
+    });
+  });
+
+  describe('When GET /auth/me endpoint is called without token', () => {
+    test('Then it should return 401 status with error message', async () => {
+      const expectedStatusCode = 401;
+
+      const response = await request(app).get('/auth/me');
+
+      expect(response.status).toBe(expectedStatusCode);
+      expect(response.body).toHaveProperty('error', 'No token provided');
     });
   });
 
