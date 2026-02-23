@@ -4,6 +4,7 @@ import debugCreator from 'debug';
 import { startServer } from './server/app.js';
 import { connectToDatabase } from './database/index.js';
 import './server/index.js';
+import { startUpdateUnpaidToOverdueJob } from './jobs/updateUnpaidToOverdue.job.js';
 
 const debug = debugCreator('src:index');
 
@@ -16,4 +17,7 @@ if (!process.env.MONGODB_URL) {
 const mongoUrl = process.env.MONGODB_URL;
 
 await connectToDatabase(mongoUrl);
+
+startUpdateUnpaidToOverdueJob();
+
 startServer(+port);
