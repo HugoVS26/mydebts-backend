@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { debtsMock } from '../../mocks/debtsMock';
 import { DebtRequestById } from '../../types/requests';
-import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
+import DebtsMongooseRepository from '../../repository/DebtsRepository';
 import DebtsController from '../DebtsController';
 import { IDebtRepository } from '../../types/debt';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
@@ -29,9 +29,7 @@ describe('Given a deleteDebt method in DebtsController', () => {
       deleteDebt: jest.fn().mockResolvedValue(debtMock),
     };
 
-    const debtController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should call the response status method with a 200 code and the json method with the debt', async () => {
       const expectedStatusCode = 200;
@@ -59,9 +57,7 @@ describe('Given a deleteDebt method in DebtsController', () => {
       deleteDebt: jest.fn().mockResolvedValue(null),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
       const errorMessage = 'Debt not found';
@@ -69,10 +65,7 @@ describe('Given a deleteDebt method in DebtsController', () => {
       const expectedStatusCode = 404;
 
       try {
-        await debtsController.deleteDebt(
-          req as DebtRequestById,
-          res as Response
-        );
+        await debtsController.deleteDebt(req as DebtRequestById, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);
@@ -92,9 +85,7 @@ describe('Given a deleteDebt method in DebtsController', () => {
       deleteDebt: jest.fn().mockRejectedValue(new Error('Database error')),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
       const errorMessage = 'Error deleting debt';
@@ -102,10 +93,7 @@ describe('Given a deleteDebt method in DebtsController', () => {
       const expectedStatusCode = 500;
 
       try {
-        await debtsController.deleteDebt(
-          req as DebtRequestById,
-          res as Response
-        );
+        await debtsController.deleteDebt(req as DebtRequestById, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);

@@ -3,7 +3,7 @@ import { IDebtRepository } from '../../types/debt';
 import DebtsController from '../DebtsController';
 import { debtsMock } from '../../mocks/debtsMock';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
-import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
+import DebtsMongooseRepository from '../../repository/DebtsRepository';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -20,9 +20,7 @@ describe('Given the method getDebts in DebtsController', () => {
   };
 
   describe('When it is called with a response as a parameter', () => {
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should call the response status method with a 200 code and the json method with the debts and a message', async () => {
       const expectedJson = {
@@ -41,13 +39,9 @@ describe('Given the method getDebts in DebtsController', () => {
 
   describe('When the repository fails', () => {
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
-      debtsMockRepository.getDebts = jest
-        .fn()
-        .mockRejectedValue(new Error('Database error'));
+      debtsMockRepository.getDebts = jest.fn().mockRejectedValue(new Error('Database error'));
 
-      const debtsController = new DebtsController(
-        debtsMockRepository as DebtsMongooseRepository
-      );
+      const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
       const errorMessage = 'Error fetching debts';
       const publicErrorMessage = 'Could not get debts';

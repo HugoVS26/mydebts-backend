@@ -3,7 +3,7 @@ import { debtsMock } from '../../mocks/debtsMock';
 import { Mongoose } from 'mongoose';
 import { IDebtRepository } from '../../types/debt';
 import DebtsController from '../DebtsController';
-import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
+import DebtsMongooseRepository from '../../repository/DebtsRepository';
 import { DebtRequestById } from '../../types/requests';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
 
@@ -29,9 +29,7 @@ describe('Given the method getDebtById in DebtsController', () => {
       getDebtById: jest.fn().mockResolvedValue(debtMock),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should call the response status method with a 200 code and the json method with the debt and a message', async () => {
       const expectedStatusCode = 200;
@@ -40,10 +38,7 @@ describe('Given the method getDebtById in DebtsController', () => {
         debt: debtMock,
       };
 
-      await debtsController.getDebtById(
-        req as DebtRequestById,
-        res as Response
-      );
+      await debtsController.getDebtById(req as DebtRequestById, res as Response);
 
       expect(debtsMockRepository.getDebtById).toHaveBeenCalledWith(debtId);
       expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
@@ -61,9 +56,7 @@ describe('Given the method getDebtById in DebtsController', () => {
       getDebtById: jest.fn().mockResolvedValue(null),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
       const errorMessage = 'Debt not found';
@@ -71,10 +64,7 @@ describe('Given the method getDebtById in DebtsController', () => {
       const expectedStatusCode = 404;
 
       try {
-        await debtsController.getDebtById(
-          req as DebtRequestById,
-          res as Response
-        );
+        await debtsController.getDebtById(req as DebtRequestById, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);
@@ -94,9 +84,7 @@ describe('Given the method getDebtById in DebtsController', () => {
       getDebtById: jest.fn().mockRejectedValue(new Error('Database Error')),
     };
 
-    const debtsController = new DebtsController(
-      debtsMockRepository as DebtsMongooseRepository
-    );
+    const debtsController = new DebtsController(debtsMockRepository as DebtsMongooseRepository);
 
     test('Then it should throw a CustomError with a message, publicMessage and statusCode', async () => {
       const errorMessage = 'Error fetching debt';
@@ -104,10 +92,7 @@ describe('Given the method getDebtById in DebtsController', () => {
       const expectedStatusCode = 500;
 
       try {
-        await debtsController.getDebtById(
-          req as DebtRequestById,
-          res as Response
-        );
+        await debtsController.getDebtById(req as DebtRequestById, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);

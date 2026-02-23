@@ -4,7 +4,7 @@ import DebtsController from '../DebtsController';
 import { debtsMock } from '../../mocks/debtsMock';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
 import { DebtRequestByFilter } from '../../types/requests';
-import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
+import DebtsMongooseRepository from '../../repository/DebtsRepository';
 
 beforeEach(() => {
   jest.clearAllMocks();
