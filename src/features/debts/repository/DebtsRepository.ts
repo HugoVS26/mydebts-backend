@@ -1,6 +1,6 @@
 import '../../users/models/user.js';
 import Debt from '../models/debt.js';
-import { IDebt, IDebtCreate, IDebtFilter, IDebtRepository } from '../types/debt';
+import { IDebt, IDebtCreate, IDebtFilter, IDebtRepository } from '../types/debt.js';
 
 class DebtRepository implements IDebtRepository {
   private populateFields = '_id firstName lastName displayName email role';
