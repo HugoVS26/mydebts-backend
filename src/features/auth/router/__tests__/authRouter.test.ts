@@ -2,7 +2,7 @@ import request from 'supertest';
 import express, { Application } from 'express';
 import createAuthRouter from '../authRouter';
 import { AuthController } from '../../controller/AuthController';
-import User from '../../../users/models/user';
+import { AuthService } from '../../services/auth.service';
 import {
   mockUser,
   mockRegisterPayload,
@@ -12,237 +12,170 @@ import {
   mockJwtPayload,
 } from '../../mocks/authMock';
 
-jest.mock('../../../users/models/user');
-jest.mock('jsonwebtoken');
+jest.mock('../../services/auth.service');
+jest.mock('../../middlewares/authMiddleware', () => ({
+  authMiddleware: (req: any, res: any, next: any) => {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      res.status(401).json({ error: 'No token provided' });
+      return;
+    }
+    req.userId = mockJwtPayload.userId;
+    next();
+  },
+}));
+
+const mockAuthService = {
+  register: jest.fn(),
+  login: jest.fn(),
+  getMe: jest.fn(),
+} as unknown as AuthService;
 
 describe('Given the authRouter', () => {
   let app: Application;
-  let authController: AuthController;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    process.env.JWT_SECRET = 'test-secret-key';
-
     app = express();
     app.use(express.json());
 
-    authController = new AuthController();
-    const authRouter = createAuthRouter(authController);
-
-    app.use('/auth', authRouter);
+    const authController = new AuthController(mockAuthService);
+    app.use('/auth', createAuthRouter(authController));
   });
 
-  describe('When POST /auth/register endpoint is called with valid data', () => {
-    test('Then it should return 201 status and auth response with token', async () => {
-      const expectedStatusCode = 201;
-
-      (User.findOne as jest.Mock).mockResolvedValue(null);
-      (User.create as jest.Mock).mockResolvedValue(mockUser);
-      const jwt = require('jsonwebtoken');
-      jwt.sign = jest.fn().mockReturnValue(mockJwtToken);
+  describe('When POST /auth/register is called with valid data', () => {
+    it('Should return 201 and the auth response', async () => {
+      mockAuthService.register = jest.fn().mockResolvedValue(mockAuthResponse);
 
       const response = await request(app).post('/auth/register').send(mockRegisterPayload);
 
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(201);
       expect(response.body).toEqual(mockAuthResponse);
     });
   });
 
-  describe('When POST /auth/register endpoint is called with missing firstName', () => {
-    test('Then it should return 400 status with validation error', async () => {
-      const expectedStatusCode = 400;
-      const invalidPayload = {
+  describe('When POST /auth/register is called with missing firstName', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app).post('/auth/register').send({
         lastName: 'García',
         email: 'hugo@example.com',
         password: 'SecurePass123!',
-      };
+      });
 
-      const response = await request(app).post('/auth/register').send(invalidPayload);
-
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
       expect(response.body.details).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'firstName',
-          }),
-        ])
+        expect.arrayContaining([expect.objectContaining({ field: 'firstName' })])
       );
     });
   });
 
-  describe('When POST /auth/register endpoint is called with invalid email format', () => {
-    test('Then it should return 400 status with validation error', async () => {
-      const expectedStatusCode = 400;
-      const invalidPayload = {
+  describe('When POST /auth/register is called with invalid email', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app).post('/auth/register').send({
         firstName: 'Hugo',
         lastName: 'García',
         email: 'invalid-email',
         password: 'SecurePass123!',
-      };
+      });
 
-      const response = await request(app).post('/auth/register').send(invalidPayload);
-
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
       expect(response.body.details).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'email',
-          }),
-        ])
+        expect.arrayContaining([expect.objectContaining({ field: 'email' })])
       );
     });
   });
 
-  describe('When POST /auth/register endpoint is called with password too short', () => {
-    test('Then it should return 400 status with validation error', async () => {
-      const expectedStatusCode = 400;
-      const invalidPayload = {
+  describe('When POST /auth/register is called with password too short', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app).post('/auth/register').send({
         firstName: 'Hugo',
         lastName: 'García',
         email: 'hugo@example.com',
         password: '123',
-      };
-
-      const response = await request(app).post('/auth/register').send(invalidPayload);
-
-      expect(response.status).toBe(expectedStatusCode);
-      expect(response.body).toHaveProperty('error', 'Validation failed');
-      expect(response.body.details).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'password',
-          }),
-        ])
-      );
-    });
-  });
-
-  describe('When POST /auth/login endpoint is called with valid credentials', () => {
-    test('Then it should return 200 status and auth response with token', async () => {
-      const expectedStatusCode = 200;
-
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockResolvedValue({
-          ...mockUser,
-          comparePassword: jest.fn().mockResolvedValue(true),
-        }),
       });
-      const jwt = require('jsonwebtoken');
-      jwt.sign = jest.fn().mockReturnValue(mockJwtToken);
 
-      const response = await request(app).post('/auth/login').send(mockLoginPayload);
-
-      expect(response.status).toBe(expectedStatusCode);
-      expect(response.body).toEqual(mockAuthResponse);
-    });
-  });
-
-  describe('When POST /auth/login endpoint is called with missing email', () => {
-    test('Then it should return 400 status with validation error', async () => {
-      const expectedStatusCode = 400;
-      const invalidPayload = {
-        password: 'SecurePass123!',
-      };
-
-      const response = await request(app).post('/auth/login').send(invalidPayload);
-
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
       expect(response.body.details).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'email',
-          }),
-        ])
+        expect.arrayContaining([expect.objectContaining({ field: 'password' })])
       );
     });
   });
 
-  describe('When POST /auth/login endpoint is called with missing password', () => {
-    test('Then it should return 400 status with validation error', async () => {
-      const expectedStatusCode = 400;
-      const invalidPayload = {
-        email: 'hugo@example.com',
-      };
-
-      const response = await request(app).post('/auth/login').send(invalidPayload);
-
-      expect(response.status).toBe(expectedStatusCode);
-      expect(response.body).toHaveProperty('error', 'Validation failed');
-      expect(response.body.details).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'password',
-          }),
-        ])
-      );
-    });
-  });
-
-  describe('When POST /auth/register endpoint is called with multiple validation errors', () => {
-    test('Then it should return 400 status with all validation errors', async () => {
-      const expectedStatusCode = 400;
-      const invalidPayload = {
+  describe('When POST /auth/register is called with multiple invalid fields', () => {
+    it('Should return 400 with all validation errors', async () => {
+      const response = await request(app).post('/auth/register').send({
         firstName: '',
         email: 'invalid',
         password: '123',
-      };
+      });
 
-      const response = await request(app).post('/auth/register').send(invalidPayload);
-
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
       expect(response.body.details.length).toBeGreaterThanOrEqual(3);
     });
   });
 
-  describe('When POST /auth/login endpoint is called with invalid email format', () => {
-    test('Then it should return 400 status with validation error', async () => {
-      const expectedStatusCode = 400;
-      const invalidPayload = {
-        email: 'not-an-email',
-        password: 'SecurePass123!',
-      };
+  describe('When POST /auth/login is called with valid credentials', () => {
+    it('Should return 200 and the auth response', async () => {
+      mockAuthService.login = jest.fn().mockResolvedValue(mockAuthResponse);
 
-      const response = await request(app).post('/auth/login').send(invalidPayload);
+      const response = await request(app).post('/auth/login').send(mockLoginPayload);
 
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(mockAuthResponse);
+    });
+  });
+
+  describe('When POST /auth/login is called with missing email', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app).post('/auth/login').send({ password: 'SecurePass123!' });
+
+      expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
       expect(response.body.details).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            field: 'email',
-          }),
-        ])
+        expect.arrayContaining([expect.objectContaining({ field: 'email' })])
       );
     });
   });
 
-  describe('When GET /auth/me endpoint is called with valid token', () => {
-    test('Then it should return 200 status and user data', async () => {
-      const expectedStatusCode = 200;
+  describe('When POST /auth/login is called with missing password', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app).post('/auth/login').send({ email: 'hugo@example.com' });
 
-      const jwt = require('jsonwebtoken');
-      jwt.verify = jest.fn().mockReturnValue(mockJwtPayload);
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Validation failed');
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'password' })])
+      );
+    });
+  });
 
-      (User.findById as jest.Mock).mockReturnValue({
-        select: jest.fn().mockResolvedValue({
-          _id: mockUser._id,
-          firstName: mockUser.firstName,
-          lastName: mockUser.lastName,
-          displayName: mockUser.displayName,
-          email: mockUser.email,
-          role: mockUser.role,
-        }),
-      });
+  describe('When POST /auth/login is called with invalid email format', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ email: 'not-an-email', password: 'SecurePass123!' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Validation failed');
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'email' })])
+      );
+    });
+  });
+
+  describe('When GET /auth/me is called with a valid token', () => {
+    it('Should return 200 and user data without password', async () => {
+      mockAuthService.getMe = jest.fn().mockResolvedValue(mockUser);
 
       const response = await request(app)
         .get('/auth/me')
         .set('Authorization', `Bearer ${mockJwtToken}`);
 
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(200);
       expect(response.body).toEqual({
         _id: mockUser._id.toString(),
         firstName: mockUser.firstName,
@@ -255,24 +188,20 @@ describe('Given the authRouter', () => {
     });
   });
 
-  describe('When GET /auth/me endpoint is called without token', () => {
-    test('Then it should return 401 status with error message', async () => {
-      const expectedStatusCode = 401;
-
+  describe('When GET /auth/me is called without a token', () => {
+    it('Should return 401 with error message', async () => {
       const response = await request(app).get('/auth/me');
 
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('error', 'No token provided');
     });
   });
 
   describe('When POST to an invalid route', () => {
-    test('Then it should return 404 status', async () => {
-      const expectedStatusCode = 404;
-
+    it('Should return 404', async () => {
       const response = await request(app).post('/auth/invalid-route');
 
-      expect(response.status).toBe(expectedStatusCode);
+      expect(response.status).toBe(404);
     });
   });
 });

@@ -1,7 +1,7 @@
 import { Response } from 'express';
 import { DebtRequestById } from '../../types/requests';
 import { mockedObjectId1, updatedDebtMock, updatedDebtMockWithId } from '../../mocks/debtsMock';
-import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
+import DebtsMongooseRepository from '../../repository/DebtsRepository';
 import DebtsController from '../DebtsController';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
 import { IDebtRepository } from '../../types/debt';

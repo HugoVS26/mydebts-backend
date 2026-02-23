@@ -1,246 +1,122 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+
 import { AuthController } from '../AuthController';
-import User from '../../../users/models/user';
+import { AuthService } from '../../services/auth.service';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
 import { LoginRequest } from '../../types/requests';
 import {
-  mockUser,
   mockLoginPayload,
   mockLoginPayloadWrongPassword,
   mockLoginPayloadNonExistent,
-  mockJwtToken,
   mockAuthResponse,
 } from '../../mocks/authMock';
 
-jest.mock('../../../users/models/user');
-jest.mock('jsonwebtoken');
+jest.mock('../../services/auth.service');
+
+const mockAuthService = {
+  login: jest.fn(),
+  register: jest.fn(),
+  getMe: jest.fn(),
+} as unknown as AuthService;
+
+const res: Pick<Response, 'status' | 'json'> = {
+  status: jest.fn().mockReturnThis(),
+  json: jest.fn(),
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
-  process.env.JWT_SECRET = 'test-secret-key';
-  mockUser.comparePassword = jest.fn();
 });
 
-describe('Given the method login in AuthController', () => {
-  const res: Pick<Response, 'status' | 'json'> = {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn(),
-  };
+describe('Given the login method in AuthController', () => {
+  describe('When it receives a valid request with correct credentials', () => {
+    it('Should respond with status 200 and the auth response', async () => {
+      const req = { body: mockLoginPayload } as Request<{}, {}, LoginRequest>;
 
-  describe('When it receives a valid request to login with correct credentials', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayload,
-    };
+      mockAuthService.login = jest.fn().mockResolvedValue(mockAuthResponse);
+      const authController = new AuthController(mockAuthService);
 
-    const authController = new AuthController();
+      await authController.login(req, res as Response);
 
-    test('Then it should call the response status method with a 200 code and the method json with the token and user data', async () => {
-      const expectedStatusCode = 200;
-
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockUser),
-      });
-      mockUser.comparePassword.mockResolvedValue(true);
-      (jwt.sign as jest.Mock).mockReturnValue(mockJwtToken);
-
-      await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-
-      expect(User.findOne).toHaveBeenCalledWith({ email: mockLoginPayload.email });
-      expect(mockUser.comparePassword).toHaveBeenCalledWith(mockLoginPayload.password);
-      expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
+      expect(mockAuthService.login).toHaveBeenCalledWith(
+        mockLoginPayload.email,
+        mockLoginPayload.password
+      );
+      expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(mockAuthResponse);
     });
   });
 
-  describe('When the user does not exist in the database', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayloadNonExistent,
-    };
+  describe('When the user does not exist', () => {
+    it('Should throw a CustomError with status 401', async () => {
+      const req = { body: mockLoginPayloadNonExistent } as Request<{}, {}, LoginRequest>;
+      const error = new CustomError('Invalid credentials', 401, 'Invalid email or password');
 
-    const authController = new AuthController();
-
-    test('Then it should throw a CustomError with a message, publicMessage and statusCode 401', async () => {
-      const errorMessage = 'Invalid credentials';
-      const publicErrorMessage = 'Invalid email or password';
-      const expectedStatusCode = 401;
-
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockResolvedValue(null),
-      });
+      mockAuthService.login = jest.fn().mockRejectedValue(error);
+      const authController = new AuthController(mockAuthService);
 
       try {
-        await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect((error as CustomError).message).toBe(errorMessage);
-        expect((error as CustomError).publicMessage).toBe(publicErrorMessage);
-        expect((error as CustomError).statusCode).toBe(expectedStatusCode);
+        await authController.login(req, res as Response);
+      } catch (err) {
+        expect(err).toBeInstanceOf(CustomError);
+        expect((err as CustomError).message).toBe('Invalid credentials');
+        expect((err as CustomError).publicMessage).toBe('Invalid email or password');
+        expect((err as CustomError).statusCode).toBe(401);
       }
-
-      expect(mockUser.comparePassword).not.toHaveBeenCalled();
     });
   });
 
   describe('When the password is incorrect', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayloadWrongPassword,
-    };
+    it('Should throw a CustomError with status 401', async () => {
+      const req = { body: mockLoginPayloadWrongPassword } as Request<{}, {}, LoginRequest>;
+      const error = new CustomError('Invalid credentials', 401, 'Invalid email or password');
 
-    const authController = new AuthController();
-
-    test('Then it should throw a CustomError with a message, publicMessage and statusCode 401', async () => {
-      const errorMessage = 'Invalid credentials';
-      const publicErrorMessage = 'Invalid email or password';
-      const expectedStatusCode = 401;
-
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockUser),
-      });
-      mockUser.comparePassword.mockResolvedValue(false);
+      mockAuthService.login = jest.fn().mockRejectedValue(error);
+      const authController = new AuthController(mockAuthService);
 
       try {
-        await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect((error as CustomError).message).toBe(errorMessage);
-        expect((error as CustomError).publicMessage).toBe(publicErrorMessage);
-        expect((error as CustomError).statusCode).toBe(expectedStatusCode);
+        await authController.login(req, res as Response);
+      } catch (err) {
+        expect(err).toBeInstanceOf(CustomError);
+        expect((err as CustomError).message).toBe('Invalid credentials');
+        expect((err as CustomError).publicMessage).toBe('Invalid email or password');
+        expect((err as CustomError).statusCode).toBe(401);
       }
-
-      expect(mockUser.comparePassword).toHaveBeenCalledWith(mockLoginPayloadWrongPassword.password);
     });
   });
 
-  describe('When querying the user from database', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayload,
-    };
-
-    const authController = new AuthController();
-
-    test('Then it should call select with "+password" to include password field', async () => {
-      const mockSelect = jest.fn().mockResolvedValue(mockUser);
-
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: mockSelect,
-      });
-      mockUser.comparePassword.mockResolvedValue(true);
-      (jwt.sign as jest.Mock).mockReturnValue(mockJwtToken);
-
-      await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-
-      expect(mockSelect).toHaveBeenCalledWith('+password');
-    });
-  });
-
-  describe('When there is a mongoose ValidationError', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayload,
-    };
-
-    const authController = new AuthController();
-
-    test('Then it should pass through the ValidationError', async () => {
+  describe('When a mongoose ValidationError is thrown', () => {
+    it('Should rethrow the ValidationError', async () => {
+      const req = { body: mockLoginPayload } as Request<{}, {}, LoginRequest>;
       const validationError = new mongoose.Error.ValidationError();
 
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockRejectedValue(validationError),
-      });
+      mockAuthService.login = jest.fn().mockRejectedValue(validationError);
+      const authController = new AuthController(mockAuthService);
 
       try {
-        await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(mongoose.Error.ValidationError);
+        await authController.login(req, res as Response);
+      } catch (err) {
+        expect(err).toBeInstanceOf(mongoose.Error.ValidationError);
       }
     });
   });
 
-  describe('When there is an unexpected error during login', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayload,
-    };
+  describe('When an unexpected error occurs', () => {
+    it('Should throw a CustomError with status 401', async () => {
+      const req = { body: mockLoginPayload } as Request<{}, {}, LoginRequest>;
 
-    const authController = new AuthController();
-
-    test('Then it should throw a CustomError with a message, publicMessage and statusCode 401', async () => {
-      const errorMessage = 'Error logging in';
-      const publicErrorMessage = 'Could not authenticate user';
-      const expectedStatusCode = 401;
-
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockRejectedValue(new Error('Database connection failed')),
-      });
+      mockAuthService.login = jest.fn().mockRejectedValue(new Error('Unexpected error'));
+      const authController = new AuthController(mockAuthService);
 
       try {
-        await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect((error as CustomError).message).toBe(errorMessage);
-        expect((error as CustomError).publicMessage).toBe(publicErrorMessage);
-        expect((error as CustomError).statusCode).toBe(expectedStatusCode);
+        await authController.login(req, res as Response);
+      } catch (err) {
+        expect(err).toBeInstanceOf(CustomError);
+        expect((err as CustomError).message).toBe('Error logging in');
+        expect((err as CustomError).publicMessage).toBe('Could not authenticate user');
+        expect((err as CustomError).statusCode).toBe(401);
       }
-    });
-  });
-
-  describe('When generating JWT token after successful login', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayload,
-    };
-
-    const authController = new AuthController();
-
-    test('Then it should sign JWT with correct payload and expiration', async () => {
-      const expectedPayload = {
-        userId: mockUser._id.toString(),
-        email: mockUser.email,
-        role: mockUser.role,
-      };
-      const expectedExpiration = '7d';
-
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockUser),
-      });
-      mockUser.comparePassword.mockResolvedValue(true);
-      (jwt.sign as jest.Mock).mockReturnValue(mockJwtToken);
-
-      await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-
-      expect(jwt.sign).toHaveBeenCalledWith(expectedPayload, 'test-secret-key', {
-        expiresIn: expectedExpiration,
-      });
-    });
-  });
-
-  describe('When JWT_SECRET is not configured in environment variables', () => {
-    const req: Pick<Request<{}, {}, LoginRequest>, 'body'> = {
-      body: mockLoginPayload,
-    };
-
-    const authController = new AuthController();
-
-    test('Then it should throw a CustomError with a message, publicMessage and statusCode 401', async () => {
-      const errorMessage = 'Error logging in';
-      const publicErrorMessage = 'Could not authenticate user';
-      const expectedStatusCode = 401;
-
-      delete process.env.JWT_SECRET;
-      (User.findOne as jest.Mock).mockReturnValue({
-        select: jest.fn().mockResolvedValue(mockUser),
-      });
-      mockUser.comparePassword.mockResolvedValue(true);
-
-      try {
-        await authController.login(req as Request<{}, {}, LoginRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect((error as CustomError).message).toBe(errorMessage);
-        expect((error as CustomError).publicMessage).toBe(publicErrorMessage);
-        expect((error as CustomError).statusCode).toBe(expectedStatusCode);
-      }
-
-      process.env.JWT_SECRET = 'test-secret-key';
     });
   });
 });

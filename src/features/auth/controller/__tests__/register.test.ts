@@ -1,184 +1,87 @@
 import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
 import mongoose from 'mongoose';
+
 import { AuthController } from '../AuthController';
-import User from '../../../users/models/user';
+import { AuthService } from '../../services/auth.service';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
 import { RegisterRequest } from '../../types/requests';
-import {
-  mockUser,
-  mockRegisterPayload,
-  mockJwtToken,
-  mockAuthResponse,
-} from '../../mocks/authMock';
+import { mockRegisterPayload, mockAuthResponse } from '../../mocks/authMock';
 
-jest.mock('../../../users/models/user');
-jest.mock('jsonwebtoken');
+const mockAuthService = {
+  register: jest.fn(),
+  login: jest.fn(),
+  getMe: jest.fn(),
+} as unknown as AuthService;
+
+const res: Pick<Response, 'status' | 'json'> = {
+  status: jest.fn().mockReturnThis(),
+  json: jest.fn(),
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
-  process.env.JWT_SECRET = 'test-secret-key';
 });
 
-describe('Given the method register in AuthController', () => {
-  const res: Pick<Response, 'status' | 'json'> = {
-    status: jest.fn().mockReturnThis(),
-    json: jest.fn(),
-  };
-
+describe('Given the register method in AuthController', () => {
   describe('When it receives a valid request to register a new user', () => {
-    const req: Pick<Request<{}, {}, RegisterRequest>, 'body'> = {
-      body: mockRegisterPayload,
-    };
+    it('Should respond with status 201 and the auth response', async () => {
+      const req = { body: mockRegisterPayload } as Request<{}, {}, RegisterRequest>;
 
-    const authController = new AuthController();
+      mockAuthService.register = jest.fn().mockResolvedValue(mockAuthResponse);
+      const authController = new AuthController(mockAuthService);
 
-    test('Then it should call the response status method with a 201 code and the method json with the token and user data', async () => {
-      const expectedStatusCode = 201;
+      await authController.register(req, res as Response);
 
-      (User.findOne as jest.Mock).mockResolvedValue(null);
-      (User.create as jest.Mock).mockResolvedValue(mockUser);
-      (jwt.sign as jest.Mock).mockReturnValue(mockJwtToken);
-
-      await authController.register(req as Request<{}, {}, RegisterRequest>, res as Response);
-
-      expect(User.findOne).toHaveBeenCalledWith({ email: mockRegisterPayload.email });
-      expect(User.create).toHaveBeenCalledWith(mockRegisterPayload);
-      expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
+      expect(mockAuthService.register).toHaveBeenCalledWith(
+        mockRegisterPayload.firstName,
+        mockRegisterPayload.lastName,
+        mockRegisterPayload.email,
+        mockRegisterPayload.password
+      );
+      expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(mockAuthResponse);
     });
   });
 
-  describe('When the email already exists in the database', () => {
-    const req: Pick<Request<{}, {}, RegisterRequest>, 'body'> = {
-      body: mockRegisterPayload,
-    };
+  describe('When the email is already registered', () => {
+    it('Should throw a CustomError with status 409', async () => {
+      const req = { body: mockRegisterPayload } as Request<{}, {}, RegisterRequest>;
+      const error = new CustomError('Email already registered', 409, 'Email already in use');
 
-    const authController = new AuthController();
+      mockAuthService.register = jest.fn().mockRejectedValue(error);
+      const authController = new AuthController(mockAuthService);
 
-    test('Then it should throw a CustomError with a message, publicMessage and statusCode 409', async () => {
-      const errorMessage = 'Email already registered';
-      const publicErrorMessage = 'Email already in use';
-      const expectedStatusCode = 409;
-
-      (User.findOne as jest.Mock).mockResolvedValue(mockUser);
-
-      try {
-        await authController.register(req as Request<{}, {}, RegisterRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect((error as CustomError).message).toBe(errorMessage);
-        expect((error as CustomError).publicMessage).toBe(publicErrorMessage);
-        expect((error as CustomError).statusCode).toBe(expectedStatusCode);
-      }
-
-      expect(User.create).not.toHaveBeenCalled();
+      await expect(authController.register(req, res as Response)).rejects.toMatchObject({
+        statusCode: 409,
+        publicMessage: 'Email already in use',
+      });
     });
   });
 
-  describe('When JWT_SECRET is not configured in environment variables', () => {
-    const req: Pick<Request<{}, {}, RegisterRequest>, 'body'> = {
-      body: mockRegisterPayload,
-    };
-
-    const authController = new AuthController();
-
-    test('Then it should throw a CustomError with a message, publicMessage and statusCode 500', async () => {
-      const errorMessage = 'Error registering user';
-      const publicErrorMessage = 'Could not create user account';
-      const expectedStatusCode = 500;
-
-      delete process.env.JWT_SECRET;
-      (User.findOne as jest.Mock).mockResolvedValue(null);
-      (User.create as jest.Mock).mockResolvedValue(mockUser);
-
-      try {
-        await authController.register(req as Request<{}, {}, RegisterRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect((error as CustomError).message).toBe(errorMessage);
-        expect((error as CustomError).publicMessage).toBe(publicErrorMessage);
-        expect((error as CustomError).statusCode).toBe(expectedStatusCode);
-      }
-
-      process.env.JWT_SECRET = 'test-secret-key';
-    });
-  });
-
-  describe('When there is a mongoose ValidationError', () => {
-    const req: Pick<Request<{}, {}, RegisterRequest>, 'body'> = {
-      body: mockRegisterPayload,
-    };
-
-    const authController = new AuthController();
-
-    test('Then it should pass through the ValidationError', async () => {
+  describe('When a mongoose ValidationError is thrown', () => {
+    it('Should rethrow the ValidationError', async () => {
+      const req = { body: mockRegisterPayload } as Request<{}, {}, RegisterRequest>;
       const validationError = new mongoose.Error.ValidationError();
-      validationError.errors = {
-        email: {
-          message: 'Email is invalid',
-        } as any,
-      };
 
-      (User.findOne as jest.Mock).mockResolvedValue(null);
-      (User.create as jest.Mock).mockRejectedValue(validationError);
+      mockAuthService.register = jest.fn().mockRejectedValue(validationError);
+      const authController = new AuthController(mockAuthService);
 
-      try {
-        await authController.register(req as Request<{}, {}, RegisterRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(mongoose.Error.ValidationError);
-      }
+      await expect(authController.register(req, res as Response)).rejects.toBeInstanceOf(
+        mongoose.Error.ValidationError
+      );
     });
   });
 
-  describe('When there is an unexpected error during registration', () => {
-    const req: Pick<Request<{}, {}, RegisterRequest>, 'body'> = {
-      body: mockRegisterPayload,
-    };
+  describe('When an unexpected error occurs', () => {
+    it('Should throw a CustomError with status 500', async () => {
+      const req = { body: mockRegisterPayload } as Request<{}, {}, RegisterRequest>;
 
-    const authController = new AuthController();
+      mockAuthService.register = jest.fn().mockRejectedValue(new Error('Unexpected error'));
+      const authController = new AuthController(mockAuthService);
 
-    test('Then it should throw a CustomError with a message, publicMessage and statusCode 500', async () => {
-      const errorMessage = 'Error registering user';
-      const publicErrorMessage = 'Could not create user account';
-      const expectedStatusCode = 500;
-
-      (User.findOne as jest.Mock).mockRejectedValue(new Error('Database connection failed'));
-
-      try {
-        await authController.register(req as Request<{}, {}, RegisterRequest>, res as Response);
-      } catch (error) {
-        expect(error).toBeInstanceOf(CustomError);
-        expect((error as CustomError).message).toBe(errorMessage);
-        expect((error as CustomError).publicMessage).toBe(publicErrorMessage);
-        expect((error as CustomError).statusCode).toBe(expectedStatusCode);
-      }
-    });
-  });
-
-  describe('When generating JWT token', () => {
-    const req: Pick<Request<{}, {}, RegisterRequest>, 'body'> = {
-      body: mockRegisterPayload,
-    };
-
-    const authController = new AuthController();
-
-    test('Then it should sign JWT with correct payload and expiration', async () => {
-      const expectedPayload = {
-        userId: mockUser._id.toString(),
-        email: mockUser.email,
-        role: mockUser.role,
-      };
-      const expectedExpiration = '7d';
-
-      (User.findOne as jest.Mock).mockResolvedValue(null);
-      (User.create as jest.Mock).mockResolvedValue(mockUser);
-      (jwt.sign as jest.Mock).mockReturnValue(mockJwtToken);
-
-      await authController.register(req as Request<{}, {}, RegisterRequest>, res as Response);
-
-      expect(jwt.sign).toHaveBeenCalledWith(expectedPayload, 'test-secret-key', {
-        expiresIn: expectedExpiration,
+      await expect(authController.register(req, res as Response)).rejects.toMatchObject({
+        statusCode: 500,
+        publicMessage: 'Could not create user account',
       });
     });
   });

@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import DebtsController from '../DebtsController';
-import DebtsMongooseRepository from '../../repository/DebtsMongooseRepository';
+import DebtsMongooseRepository from '../../repository/DebtsRepository';
 import { DebtRequestWithoutId } from '../../types/requests';
 import { debtsMock, mockCreateDebtPayload } from '../../mocks/debtsMock';
 import { IDebtRepository } from '../../types/debt';
