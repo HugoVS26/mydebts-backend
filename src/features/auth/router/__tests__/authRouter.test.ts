@@ -29,6 +29,8 @@ const mockAuthService = {
   register: jest.fn(),
   login: jest.fn(),
   getMe: jest.fn(),
+  forgotPassword: jest.fn(),
+  resetPassword: jest.fn(),
 } as unknown as AuthService;
 
 describe('Given the authRouter', () => {
@@ -202,6 +204,102 @@ describe('Given the authRouter', () => {
       const response = await request(app).post('/auth/invalid-route');
 
       expect(response.status).toBe(404);
+    });
+  });
+
+  describe('When POST /auth/forgot-password is called with a valid email', () => {
+    it('Should return 200 and a generic success message', async () => {
+      mockAuthService.forgotPassword = jest.fn().mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .post('/auth/forgot-password')
+        .send({ email: 'hugo@example.com' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({
+        message: 'If that email exists, a reset link has been sent.',
+      });
+    });
+  });
+
+  describe('When POST /auth/forgot-password is called with missing email', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app).post('/auth/forgot-password').send({});
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Validation failed');
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'email' })])
+      );
+    });
+  });
+
+  describe('When POST /auth/forgot-password is called with invalid email format', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app)
+        .post('/auth/forgot-password')
+        .send({ email: 'not-an-email' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Validation failed');
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'email' })])
+      );
+    });
+  });
+
+  describe('When POST /auth/reset-password is called with a valid token and new password', () => {
+    it('Should return 200 and a success message', async () => {
+      mockAuthService.resetPassword = jest.fn().mockResolvedValue(undefined);
+
+      const response = await request(app)
+        .post('/auth/reset-password')
+        .send({ token: 'valid-token', newPassword: 'NewPassword123!' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual({ message: 'Password reset successfully.' });
+    });
+  });
+
+  describe('When POST /auth/reset-password is called with missing token', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app)
+        .post('/auth/reset-password')
+        .send({ newPassword: 'NewPassword123!' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Validation failed');
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'token' })])
+      );
+    });
+  });
+
+  describe('When POST /auth/reset-password is called with a weak password', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app)
+        .post('/auth/reset-password')
+        .send({ token: 'valid-token', newPassword: 'weakpass' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Validation failed');
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'newPassword' })])
+      );
+    });
+  });
+
+  describe('When POST /auth/reset-password is called with missing password', () => {
+    it('Should return 400 with validation error', async () => {
+      const response = await request(app)
+        .post('/auth/reset-password')
+        .send({ token: 'valid-token' });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toHaveProperty('error', 'Validation failed');
+      expect(response.body.details).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: 'newPassword' })])
+      );
     });
   });
 });
