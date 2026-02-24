@@ -52,6 +52,26 @@ export class AuthController {
     }
   }
 
+  public async forgotPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const { email } = req.body;
+      await this.authService.forgotPassword(email);
+      res.status(200).json({ message: 'If that email exists, a reset link has been sent.' });
+    } catch (error) {
+      this.handleError(error, 'Error sending reset email', 'Could not process request');
+    }
+  }
+
+  public async resetPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const { token, newPassword } = req.body;
+      await this.authService.resetPassword(token, newPassword);
+      res.status(200).json({ message: 'Password reset successfully.' });
+    } catch (error) {
+      this.handleError(error, 'Error resetting password', 'Could not reset password');
+    }
+  }
+
   private handleError(
     error: unknown,
     message: string,
