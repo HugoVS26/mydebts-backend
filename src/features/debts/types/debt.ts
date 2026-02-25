@@ -48,5 +48,5 @@ export interface IDebtRepository {
   ): Promise<IDebt | null>;
   deleteDebt(id: string): Promise<IDebt | null>;
   markDebtAsPaid(id: string): Promise<IDebt | null>;
-  deleteAllPaidDebts(): Promise<number>;
+  deleteAllPaidDebts(userId: string, mode: 'creditor' | 'debtor'): Promise<number>;
 }
