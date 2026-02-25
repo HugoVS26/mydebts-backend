@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import '../../users/models/user.js';
 import Debt from '../models/debt.js';
 import { IDebt, IDebtCreate, IDebtFilter, IDebtRepository } from '../types/debt.js';
@@ -57,8 +58,12 @@ class DebtRepository implements IDebtRepository {
     return Debt.findByIdAndUpdate(id, { status: 'paid' }, { new: true }).lean().exec();
   }
 
-  public async deleteAllPaidDebts(): Promise<number> {
-    const result = await Debt.deleteMany({ status: 'paid' });
+  public async deleteAllPaidDebts(userId: string, mode: 'creditor' | 'debtor'): Promise<number> {
+    const filter = {
+      status: 'paid',
+      [mode]: new mongoose.Types.ObjectId(userId),
+    };
+    const result = await Debt.deleteMany(filter);
     return result.deletedCount;
   }
 }
