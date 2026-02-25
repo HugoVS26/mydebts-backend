@@ -56,6 +56,11 @@ class DebtRepository implements IDebtRepository {
   public async markDebtAsPaid(id: string): Promise<IDebt | null> {
     return Debt.findByIdAndUpdate(id, { status: 'paid' }, { new: true }).lean().exec();
   }
+
+  public async deleteAllPaidDebts(): Promise<number> {
+    const result = await Debt.deleteMany({ status: 'paid' });
+    return result.deletedCount;
+  }
 }
 
 export default DebtRepository;

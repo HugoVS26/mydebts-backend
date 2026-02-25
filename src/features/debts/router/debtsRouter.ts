@@ -9,6 +9,7 @@ export default function createDebtsRouter(controller: DebtsController) {
 
   router.get('/', controller.getDebts.bind(controller));
   router.get('/filter', controller.getDebtsByFilter.bind(controller));
+  router.delete('/paid', controller.deleteAllPaidDebts.bind(controller));
   router.get('/:debtId', controller.getDebtById.bind(controller));
   router.post('/', validateDebtSchema(createDebtSchema), controller.createDebt.bind(controller));
   router.put(

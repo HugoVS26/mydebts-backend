@@ -196,6 +196,15 @@ class DebtsController {
     }
   }
 
+  public async deleteAllPaidDebts(_req: Request, res: Response): Promise<void> {
+    try {
+      const deletedCount = await this.debtRepository.deleteAllPaidDebts();
+      res.status(200).json({ message: `${deletedCount} paid debt(s) successfully deleted.` });
+    } catch (error) {
+      this.handleError(error, 'Error deleting paid debts', 'Could not delete paid debts');
+    }
+  }
+
   private handleError(
     error: unknown,
     message: string,

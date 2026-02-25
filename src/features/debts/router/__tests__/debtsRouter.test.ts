@@ -29,6 +29,9 @@ describe('Given a debtsRouter', () => {
       markDebtAsPaid: jest.fn((_req: Request, res: Response) =>
         res.status(200).json({ message: 'paid' })
       ),
+      deleteAllPaidDebts: jest.fn((_req: Request, res: Response) =>
+        res.status(200).json({ message: '3 paid debt(s) successfully deleted.' })
+      ),
     };
 
     app = express();
@@ -89,6 +92,14 @@ describe('Given a debtsRouter', () => {
       await request(app).patch(`/debts/${debtIdMock}/paid`).expect(200);
 
       expect(controllerMock.markDebtAsPaid).toHaveBeenCalled();
+    });
+  });
+
+  describe('When DELETE /paid endpoint receives a request', () => {
+    test('Then it should call deleteAllPaidDebts method', async () => {
+      await request(app).delete('/debts/paid').expect(200);
+
+      expect(controllerMock.deleteAllPaidDebts).toHaveBeenCalled();
     });
   });
 });
