@@ -3,13 +3,14 @@ import DebtsController from '../controller/DebtsController.js';
 import { validateDebtSchema } from '../../../server/middlewares/validators/validateDebts.js';
 import { createDebtSchema } from '../validators/request/debtCreate.schema.js';
 import { updateDebtSchema } from '../validators/request/debtUpdate.schema.js';
+import { AuthRequest } from '../../auth/middlewares/authMiddleware.js';
 
 export default function createDebtsRouter(controller: DebtsController) {
   const router = Router();
 
   router.get('/', controller.getDebts.bind(controller));
   router.get('/filter', controller.getDebtsByFilter.bind(controller));
-  router.delete('/paid', controller.deleteAllPaidDebts.bind(controller));
+  router.delete('/paid', (req, res) => controller.deleteAllPaidDebts(req as AuthRequest, res));
   router.get('/:debtId', controller.getDebtById.bind(controller));
   router.post('/', validateDebtSchema(createDebtSchema), controller.createDebt.bind(controller));
   router.put(
