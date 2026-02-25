@@ -5,6 +5,7 @@ import CustomError from '../../../server/middlewares/errors/CustomError/CustomEr
 import { DebtRequestByFilter, DebtRequestById, DebtRequestWithoutId } from '../types/requests';
 import { updateDebtSchema } from '../validators/request/debtUpdate.schema.js';
 import Joi from 'joi';
+import { AuthRequest } from '../../auth/middlewares/authMiddleware';
 
 class DebtsController {
   constructor(private readonly debtRepository: IDebtRepository) {}
@@ -196,9 +197,20 @@ class DebtsController {
     }
   }
 
-  public async deleteAllPaidDebts(_req: Request, res: Response): Promise<void> {
+  public async deleteAllPaidDebts(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const deletedCount = await this.debtRepository.deleteAllPaidDebts();
+      const { userId } = req;
+      const mode = req.query['mode'] as 'creditor' | 'debtor';
+
+      if (!userId) {
+        throw new CustomError('User not authenticated', 401, 'Authentication required');
+      }
+
+      if (mode !== 'creditor' && mode !== 'debtor') {
+        throw new CustomError('Invalid mode', 400, 'Mode must be creditor or debtor');
+      }
+
+      const deletedCount = await this.debtRepository.deleteAllPaidDebts(userId, mode);
       res.status(200).json({ message: `${deletedCount} paid debt(s) successfully deleted.` });
     } catch (error) {
       this.handleError(error, 'Error deleting paid debts', 'Could not delete paid debts');
