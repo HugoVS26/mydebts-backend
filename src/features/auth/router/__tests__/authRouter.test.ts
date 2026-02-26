@@ -1,3 +1,7 @@
+jest.mock('../../../../server/middlewares/validators/validateTurnstile', () => ({
+  validateTurnstile: (_req: any, _res: any, next: any) => next(),
+}));
+
 import request from 'supertest';
 import express, { Application } from 'express';
 import createAuthRouter from '../authRouter';
@@ -49,7 +53,9 @@ describe('Given the authRouter', () => {
     it('Should return 201 and the auth response', async () => {
       mockAuthService.register = jest.fn().mockResolvedValue(mockAuthResponse);
 
-      const response = await request(app).post('/auth/register').send(mockRegisterPayload);
+      const response = await request(app)
+        .post('/auth/register')
+        .send({ ...mockRegisterPayload, turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(201);
       expect(response.body).toEqual(mockAuthResponse);
@@ -62,6 +68,7 @@ describe('Given the authRouter', () => {
         lastName: 'García',
         email: 'hugo@example.com',
         password: 'SecurePass123!',
+        turnstileToken: 'mock-token',
       });
 
       expect(response.status).toBe(400);
@@ -79,6 +86,7 @@ describe('Given the authRouter', () => {
         lastName: 'García',
         email: 'invalid-email',
         password: 'SecurePass123!',
+        turnstileToken: 'mock-token',
       });
 
       expect(response.status).toBe(400);
@@ -96,6 +104,7 @@ describe('Given the authRouter', () => {
         lastName: 'García',
         email: 'hugo@example.com',
         password: '123',
+        turnstileToken: 'mock-token',
       });
 
       expect(response.status).toBe(400);
@@ -112,6 +121,7 @@ describe('Given the authRouter', () => {
         firstName: '',
         email: 'invalid',
         password: '123',
+        turnstileToken: 'mock-token',
       });
 
       expect(response.status).toBe(400);
@@ -124,7 +134,9 @@ describe('Given the authRouter', () => {
     it('Should return 200 and the auth response', async () => {
       mockAuthService.login = jest.fn().mockResolvedValue(mockAuthResponse);
 
-      const response = await request(app).post('/auth/login').send(mockLoginPayload);
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ ...mockLoginPayload, turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual(mockAuthResponse);
@@ -133,7 +145,9 @@ describe('Given the authRouter', () => {
 
   describe('When POST /auth/login is called with missing email', () => {
     it('Should return 400 with validation error', async () => {
-      const response = await request(app).post('/auth/login').send({ password: 'SecurePass123!' });
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ password: 'SecurePass123!', turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
@@ -145,7 +159,9 @@ describe('Given the authRouter', () => {
 
   describe('When POST /auth/login is called with missing password', () => {
     it('Should return 400 with validation error', async () => {
-      const response = await request(app).post('/auth/login').send({ email: 'hugo@example.com' });
+      const response = await request(app)
+        .post('/auth/login')
+        .send({ email: 'hugo@example.com', turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
@@ -159,7 +175,7 @@ describe('Given the authRouter', () => {
     it('Should return 400 with validation error', async () => {
       const response = await request(app)
         .post('/auth/login')
-        .send({ email: 'not-an-email', password: 'SecurePass123!' });
+        .send({ email: 'not-an-email', password: 'SecurePass123!', turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
@@ -213,7 +229,7 @@ describe('Given the authRouter', () => {
 
       const response = await request(app)
         .post('/auth/forgot-password')
-        .send({ email: 'hugo@example.com' });
+        .send({ email: 'hugo@example.com', turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(200);
       expect(response.body).toEqual({
@@ -224,7 +240,9 @@ describe('Given the authRouter', () => {
 
   describe('When POST /auth/forgot-password is called with missing email', () => {
     it('Should return 400 with validation error', async () => {
-      const response = await request(app).post('/auth/forgot-password').send({});
+      const response = await request(app)
+        .post('/auth/forgot-password')
+        .send({ turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');
@@ -238,7 +256,7 @@ describe('Given the authRouter', () => {
     it('Should return 400 with validation error', async () => {
       const response = await request(app)
         .post('/auth/forgot-password')
-        .send({ email: 'not-an-email' });
+        .send({ email: 'not-an-email', turnstileToken: 'mock-token' });
 
       expect(response.status).toBe(400);
       expect(response.body).toHaveProperty('error', 'Validation failed');

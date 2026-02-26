@@ -43,4 +43,5 @@ export const registerSchema = Joi.object({
         'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
       'any.required': 'Password is required',
     }),
+  turnstileToken: Joi.string().required(),
 });
