@@ -6,18 +6,30 @@ import { validateRequest } from '../../../server/middlewares/validators/validate
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto.js';
 import { ResetPasswordDto } from '../dtos/reset-password.dto.js';
+import { validateTurnstile } from '../../../server/middlewares/validators/validateTurnstile.js';
 
 export default function createAuthRouter(controller: AuthController) {
   const router = Router();
 
-  router.post('/register', validateRequest(registerSchema), controller.register.bind(controller));
+  router.post(
+    '/register',
+    validateTurnstile,
+    validateRequest(registerSchema),
+    controller.register.bind(controller)
+  );
 
-  router.post('/login', validateRequest(loginSchema), controller.login.bind(controller));
+  router.post(
+    '/login',
+    validateTurnstile,
+    validateRequest(loginSchema),
+    controller.login.bind(controller)
+  );
 
   router.get('/me', authMiddleware, (req, res) => controller.me(req, res));
 
   router.post(
     '/forgot-password',
+    validateTurnstile,
     validateRequest(ForgotPasswordDto),
     controller.forgotPassword.bind(controller)
   );
