@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import crypto from 'crypto';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 import { AuthResponse } from '../types/requests.js';
 import { IUser, IUserRepository } from '../../users/types/types.js';
@@ -101,20 +101,11 @@ export class AuthService {
   }
 
   private async sendResetEmail(email: string, token: string): Promise<void> {
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: false,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-
+    const resend = new Resend(process.env.RESEND_API_KEY);
     const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${token}`;
 
-    await transporter.sendMail({
-      from: '"MyDebts" <noreply@mydebts.com>',
+    await resend.emails.send({
+      from: `"MyDebts" <${process.env.RESEND_FROM}>`,
       to: email,
       subject: 'MyDebts - Password Reset',
       html: `
