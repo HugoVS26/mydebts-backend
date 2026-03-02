@@ -1,4 +1,6 @@
-//Mock chalk before any code runs
+process.env['NODE_ENV'] = 'test';
+process.env['JWT_SECRET'] = 'test-secret';
+
 jest.mock('chalk', () => ({
   green: (text: string) => text,
   red: (text: string) => text,
