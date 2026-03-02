@@ -1,7 +1,5 @@
 import morgan from 'morgan';
-import cors from 'cors';
 import { app } from './app.js';
-import { corsOptions } from './utils/cors.js';
 import { generalError, notFound } from './middlewares/errors/errorsMiddleware.js';
 import pingRouter from '../features/ping/router/pingRouter.js';
 import createDebtsRouter from '../features/debts/router/debtsRouter.js';
@@ -14,7 +12,6 @@ import UserRepository from '../features/users/repository/UserRepository.js';
 import { AuthService } from '../features/auth/services/auth.service.js';
 
 app.use(morgan('dev'));
-app.use(cors(corsOptions));
 
 const debtsRepository = new DebtsRepository();
 const debtsController = new DebtsController(debtsRepository);
@@ -30,3 +27,5 @@ app.use('/debts', authMiddleware, createDebtsRouter(debtsController));
 
 app.use(notFound);
 app.use(generalError);
+
+export { app } from './app.js';
