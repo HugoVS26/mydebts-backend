@@ -13,8 +13,18 @@ if (!mongodbUrl) {
 export const connectToDatabase = async (mongoUrl: string) => {
   try {
     await mongoose.connect(mongoUrl);
-    mongoose.set('debug', true);
+    if (process.env['NODE_ENV'] === 'development') {
+      mongoose.set('debug', true);
+    }
     debug(chalk.green('Connected to database'));
+
+    mongoose.connection.on('disconnected', () => {
+      debug(chalk.yellow('MongoDB disconnected'));
+    });
+
+    mongoose.connection.on('error', (error) => {
+      debug(chalk.red('MongoDB connection error:', error));
+    });
   } catch (error) {
     debug(chalk.red("Couldn't connect to database:"), error);
     process.exit(1);

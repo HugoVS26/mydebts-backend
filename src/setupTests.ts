@@ -3,6 +3,7 @@ process.env['JWT_SECRET'] = 'test-secret';
 
 jest.mock('chalk', () => ({
   green: (text: string) => text,
+  yellow: (text: string) => text,
   red: (text: string) => text,
 }));
 
