@@ -3,6 +3,9 @@ module.exports = {
   preset: 'ts-jest',
   setupFilesAfterEnv: ['./src/setupTests.ts'],
   testEnvironment: 'node',
+  testEnvironmentOptions: {
+    env: { NODE_ENV: 'test' },
+  },
   testMatch: ['**/src/**/*.test.ts'],
   resolver: 'jest-ts-webcompat-resolver',
   collectCoverageFrom: [

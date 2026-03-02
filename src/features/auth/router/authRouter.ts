@@ -7,12 +7,14 @@ import { authMiddleware } from '../middlewares/authMiddleware.js';
 import { ForgotPasswordDto } from '../dtos/forgot-password.dto.js';
 import { ResetPasswordDto } from '../dtos/reset-password.dto.js';
 import { validateTurnstile } from '../../../server/middlewares/validators/validateTurnstile.js';
+import { authRateLimit } from '../../../server/configs/rate-limit.js';
 
 export default function createAuthRouter(controller: AuthController) {
   const router = Router();
 
   router.post(
     '/register',
+    authRateLimit,
     validateTurnstile,
     validateRequest(registerSchema),
     controller.register.bind(controller)
@@ -20,6 +22,7 @@ export default function createAuthRouter(controller: AuthController) {
 
   router.post(
     '/login',
+    authRateLimit,
     validateTurnstile,
     validateRequest(loginSchema),
     controller.login.bind(controller)
@@ -29,6 +32,7 @@ export default function createAuthRouter(controller: AuthController) {
 
   router.post(
     '/forgot-password',
+    authRateLimit,
     validateTurnstile,
     validateRequest(ForgotPasswordDto),
     controller.forgotPassword.bind(controller)
@@ -36,6 +40,7 @@ export default function createAuthRouter(controller: AuthController) {
 
   router.post(
     '/reset-password',
+    authRateLimit,
     validateRequest(ResetPasswordDto),
     controller.resetPassword.bind(controller)
   );

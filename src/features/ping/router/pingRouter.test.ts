@@ -1,6 +1,11 @@
 import request from 'supertest';
-import '../../../server/index';
-import app from '../../../server/app';
+import { Express } from 'express';
+
+let app: Express;
+
+beforeAll(() => {
+  app = require('../../../server/index').app;
+});
 
 describe('Given a GET / endpoint', () => {
   describe('When it receives a request', () => {
@@ -9,8 +14,9 @@ describe('Given a GET / endpoint', () => {
       const expectedStatusCode = 200;
       const expectedMessage = 'Leeeeroy Jenkins!';
 
-      const response = await request(app).get(path).expect(expectedStatusCode);
+      const response = await request(app).get(path).send();
 
+      expect(response.status).toBe(expectedStatusCode);
       expect(response.body).toHaveProperty('message', expectedMessage);
     });
   });
