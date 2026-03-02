@@ -6,6 +6,7 @@ import { Resend } from 'resend';
 import { AuthResponse } from '../types/requests.js';
 import { IUser, IUserRepository } from '../../users/types/types.js';
 import CustomError from '../../../server/middlewares/errors/CustomError/CustomError.js';
+import { JWT_EXPIRES_IN, JWT_SECRET } from '../../../server/configs/jwt.js';
 
 export class AuthService {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -49,14 +50,10 @@ export class AuthService {
   }
 
   private generateAuthResponse(user: IUser): AuthResponse {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET is not configured');
-    }
-
     const token = jwt.sign(
       { userId: user._id.toString(), email: user.email, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     return {
