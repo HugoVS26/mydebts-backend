@@ -11,7 +11,7 @@ import { authMiddleware } from '../features/auth/middlewares/authMiddleware.js';
 import UserRepository from '../features/users/repository/UserRepository.js';
 import { AuthService } from '../features/auth/services/auth.service.js';
 
-app.use(morgan('dev'));
+app.use(morgan(process.env['NODE_ENV'] === 'production' ? 'combined' : 'dev'));
 
 const debtsRepository = new DebtsRepository();
 const debtsController = new DebtsController(debtsRepository);
