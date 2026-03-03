@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IDebt } from '../types/debt';
+import { IDebt } from '../types/debt.js';
 
 import {
   debtDateValidator,

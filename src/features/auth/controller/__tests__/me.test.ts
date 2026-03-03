@@ -1,9 +1,9 @@
 import { Response } from 'express';
-import { AuthController } from '../AuthController';
-import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
-import { AuthService } from '../../services/auth.service';
-import { mockUser, mockAdminUser } from '../../mocks/authMock';
-import { AuthRequest } from '../../middlewares/authMiddleware';
+import { AuthController } from '../AuthController.js';
+import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError.js';
+import { AuthService } from '../../services/auth.service.js';
+import { mockUser, mockAdminUser } from '../../mocks/authMock.js';
+import { AuthRequest } from '../../middlewares/authMiddleware.js';
 
 const mockAuthService = {
   login: jest.fn(),

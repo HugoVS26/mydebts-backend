@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
-import { AuthController } from '../AuthController';
-import { AuthService } from '../../services/auth.service';
-import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
-import { RegisterRequest } from '../../types/requests';
-import { mockRegisterPayload, mockAuthResponse } from '../../mocks/authMock';
+import { AuthController } from '../AuthController.js';
+import { AuthService } from '../../services/auth.service.js';
+import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError.js';
+import { RegisterRequest } from '../../types/requests.js';
+import { mockRegisterPayload, mockAuthResponse } from '../../mocks/authMock.js';
 
 const mockAuthService = {
   register: jest.fn(),

@@ -9,7 +9,7 @@ jest.mock('chalk', () => ({
 
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { connectToDatabase } from './database/index';
+import { connectToDatabase } from './database/index.js';
 
 let server: MongoMemoryServer;
 

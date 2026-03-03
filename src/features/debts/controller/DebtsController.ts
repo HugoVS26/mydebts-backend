@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { IDebtCreate, IDebtFilter, IDebtRepository, IDebtUpdate } from '../types/debt';
+import { IDebtCreate, IDebtFilter, IDebtRepository, IDebtUpdate } from '../types/debt.js';
 import CustomError from '../../../server/middlewares/errors/CustomError/CustomError.js';
-import { DebtRequestByFilter, DebtRequestById, DebtRequestWithoutId } from '../types/requests';
+import { DebtRequestByFilter, DebtRequestById, DebtRequestWithoutId } from '../types/requests.js';
 import { updateDebtSchema } from '../validators/request/debtUpdate.schema.js';
 import Joi from 'joi';
-import { AuthRequest } from '../../auth/middlewares/authMiddleware';
+import { AuthRequest } from '../../auth/middlewares/authMiddleware.js';
 
 class DebtsController {
   constructor(private readonly debtRepository: IDebtRepository) {}

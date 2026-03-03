@@ -1,16 +1,16 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
-import { AuthController } from '../AuthController';
-import { AuthService } from '../../services/auth.service';
-import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
-import { LoginRequest } from '../../types/requests';
+import { AuthController } from '../AuthController.js';
+import { AuthService } from '../../services/auth.service.js';
+import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError.js';
+import { LoginRequest } from '../../types/requests.js';
 import {
   mockLoginPayload,
   mockLoginPayloadWrongPassword,
   mockLoginPayloadNonExistent,
   mockAuthResponse,
-} from '../../mocks/authMock';
+} from '../../mocks/authMock.js';
 
 jest.mock('../../services/auth.service');
 

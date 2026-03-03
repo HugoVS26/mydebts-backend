@@ -1,6 +1,6 @@
 import { type NextFunction, type Request, type Response } from 'express';
-import { notFound } from '../errorsMiddleware';
-import CustomError from '../CustomError/CustomError';
+import { notFound } from '../errorsMiddleware.js';
+import CustomError from '../CustomError/CustomError.js';
 
 describe('Given a notFound error', () => {
   describe('When it receives a next function', () => {

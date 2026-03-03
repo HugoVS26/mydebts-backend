@@ -1,10 +1,10 @@
 import { Response } from 'express';
-import { debtsMock } from '../../mocks/debtsMock';
-import { DebtRequestById } from '../../types/requests';
-import DebtsMongooseRepository from '../../repository/DebtsRepository';
-import DebtsController from '../DebtsController';
-import { IDebtRepository } from '../../types/debt';
-import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
+import { debtsMock } from '../../mocks/debtsMock.js';
+import { DebtRequestById } from '../../types/requests.js';
+import DebtsMongooseRepository from '../../repository/DebtsRepository.js';
+import DebtsController from '../DebtsController.js';
+import { IDebtRepository } from '../../types/debt.js';
+import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError.js';
 
 beforeEach(() => {
   jest.clearAllMocks();

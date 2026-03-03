@@ -4,9 +4,9 @@ jest.mock('../../../../server/middlewares/validators/validateTurnstile', () => (
 
 import request from 'supertest';
 import express, { Application } from 'express';
-import createAuthRouter from '../authRouter';
-import { AuthController } from '../../controller/AuthController';
-import { AuthService } from '../../services/auth.service';
+import createAuthRouter from '../authRouter.js';
+import { AuthController } from '../../controller/AuthController.js';
+import { AuthService } from '../../services/auth.service.js';
 import {
   mockUser,
   mockRegisterPayload,
@@ -14,7 +14,7 @@ import {
   mockJwtToken,
   mockAuthResponse,
   mockJwtPayload,
-} from '../../mocks/authMock';
+} from '../../mocks/authMock.js';
 
 jest.mock('../../services/auth.service');
 jest.mock('../../middlewares/authMiddleware', () => ({

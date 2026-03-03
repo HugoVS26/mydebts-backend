@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { IDebt } from '../types/debt';
+import { IDebt } from '../types/debt.js';
 
 export const mockedObjectId1 = new mongoose.Types.ObjectId('64e52d9f1a2b3c4d5e6f7a01');
 export const mockedObjectId2 = new mongoose.Types.ObjectId('64e52d9f1a2b3c4d5e6f7a02');

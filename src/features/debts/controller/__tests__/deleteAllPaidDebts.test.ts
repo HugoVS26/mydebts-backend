@@ -1,10 +1,10 @@
 import { Response } from 'express';
 
-import DebtsMongooseRepository from '../../repository/DebtsRepository';
-import DebtsController from '../DebtsController';
-import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
-import { IDebtRepository } from '../../types/debt';
-import { AuthRequest } from '../../../auth/middlewares/authMiddleware';
+import DebtsMongooseRepository from '../../repository/DebtsRepository.js';
+import DebtsController from '../DebtsController.js';
+import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError.js';
+import { IDebtRepository } from '../../types/debt.js';
+import { AuthRequest } from '../../../auth/middlewares/authMiddleware.js';
 
 const mockUserId = '64e52d9f1a2b3c4d5e6f7a01';
 
