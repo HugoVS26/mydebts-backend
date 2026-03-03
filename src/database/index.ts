@@ -1,14 +1,8 @@
-import 'dotenv/config';
 import mongoose from 'mongoose';
 import chalk from 'chalk';
 import debugCreator from 'debug';
 
 const debug = debugCreator('src:database:index');
-
-const mongodbUrl = process.env.MONGODB_URL;
-if (!mongodbUrl) {
-  throw new Error('MONGODB_URL is not defined in environment variables');
-}
 
 export const connectToDatabase = async (mongoUrl: string) => {
   try {
