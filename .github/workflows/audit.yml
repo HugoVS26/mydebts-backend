@@ -38,6 +38,15 @@ jobs:
       - name: 'ESLint validation'
         run: NODE_OPTIONS=--experimental-vm-modules npx eslint . --max-warnings 0
 
+      - name: 'Run tests'
+        run: npm test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test-secret
+          RESEND_API_KEY: test-key
+          RESEND_FROM: test@test.com
+          TURNSTILE_SECRET_KEY: test-key
+
       - name: 'Check commit message length'
         uses: gsactions/commit-message-checker@v1
         with:
