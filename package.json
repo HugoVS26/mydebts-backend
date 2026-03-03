@@ -10,6 +10,7 @@
     "start": "node .",
     "start:dev": "node --watch .",
     "start:debug": "cross-env node --watch .",
+    "start:prod": "node --trace-uncaught dist/index.js",
     "test": "jest ",
     "test:dev": "jest --watchAll",
     "test:coverage": "jest --coverage ",
