@@ -1,5 +1,5 @@
 import { type Request } from 'express';
-import { IDebtCreate } from './debt';
+import { IDebtCreate } from './debt.js';
 
 export type DebtRequestById = Request<{ debtId: string }>;
 

@@ -1,6 +1,6 @@
 import cron, { type ScheduledTask } from 'node-cron';
-import { startUpdateUnpaidToOverdueJob } from './updateUnpaidToOverdue.job';
-import Debt from '../features/debts/models/debt';
+import { startUpdateUnpaidToOverdueJob } from './updateUnpaidToOverdue.job.js';
+import Debt from '../features/debts/models/debt.js';
 
 jest.mock('node-cron');
 jest.mock('../features/debts/models/debt');

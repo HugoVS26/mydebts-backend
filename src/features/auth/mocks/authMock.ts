@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { RegisterRequest, LoginRequest, AuthResponse } from '../types/requests';
+import { RegisterRequest, LoginRequest, AuthResponse } from '../types/requests.js';
 
 export const mockUser = {
   _id: new mongoose.Types.ObjectId('676f1234567890abcdef1234'),

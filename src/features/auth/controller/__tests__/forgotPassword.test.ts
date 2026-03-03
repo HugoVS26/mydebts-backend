@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 
-import { AuthController } from '../AuthController';
-import { AuthService } from '../../services/auth.service';
-import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError';
+import { AuthController } from '../AuthController.js';
+import { AuthService } from '../../services/auth.service.js';
+import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError.js';
 
 const mockAuthService = {
   register: jest.fn(),

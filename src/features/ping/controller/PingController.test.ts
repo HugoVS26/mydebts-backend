@@ -1,5 +1,5 @@
 import { type Request, type Response } from 'express';
-import PingController from './PingController';
+import PingController from './PingController.js';
 
 beforeAll(() => {
   jest.clearAllMocks();

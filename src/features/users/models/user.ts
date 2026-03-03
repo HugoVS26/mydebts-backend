@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt';
 import nameValidator from '../validators/name.validator.js';
 import emailValidator from '../validators/email.validator.js';
 import passwordValidator from '../validators/password.validator.js';
-import { IUser } from '../types/types';
+import { IUser } from '../types/types.js';
 
 const UserSchema = new mongoose.Schema<IUser>(
   {

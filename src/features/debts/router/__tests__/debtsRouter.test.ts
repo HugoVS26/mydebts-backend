@@ -1,7 +1,7 @@
 import express, { Request, Response } from 'express';
 import request from 'supertest';
-import createDebtsRouter from '../debtsRouter';
-import { newDebtMock, updatedDebtMockRouter } from '../../mocks/debtsMock';
+import createDebtsRouter from '../debtsRouter.js';
+import { newDebtMock, updatedDebtMockRouter } from '../../mocks/debtsMock.js';
 
 describe('Given a debtsRouter', () => {
   let app: express.Express;
