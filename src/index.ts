@@ -8,16 +8,20 @@ import { startUpdateUnpaidToOverdueJob } from './jobs/updateUnpaidToOverdue.job.
 
 const debug = debugCreator('src:index');
 
-const port = process.env.PORT ?? 4000;
-if (!process.env.MONGODB_URL) {
-  debug(chalk.red('Missing MongoDB String'));
+try {
+  const port = process.env['PORT'] ?? 4000;
+
+  if (!process.env['MONGODB_URL']) {
+    console.error('Missing MongoDB String');
+    process.exit(1);
+  }
+
+  const mongoUrl = process.env['MONGODB_URL'];
+
+  await connectToDatabase(mongoUrl);
+  startUpdateUnpaidToOverdueJob();
+  startServer(+port);
+} catch (error) {
+  console.error('STARTUP ERROR:', error);
   process.exit(1);
 }
-
-const mongoUrl = process.env.MONGODB_URL;
-
-await connectToDatabase(mongoUrl);
-
-startUpdateUnpaidToOverdueJob();
-
-startServer(+port);
