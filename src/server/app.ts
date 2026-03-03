@@ -18,8 +18,8 @@ app.use((req, res, next) => {
 });
 
 export const startServer = (port: number) => {
-  app.listen(port, () => {
-    debug(chalk.green(`Listening on http://localhost:${port}`));
+  app.listen(port, '0.0.0.0', () => {
+    debug(chalk.green(`Listening on http://0.0.0.0:${port}`));
   });
 };
 
