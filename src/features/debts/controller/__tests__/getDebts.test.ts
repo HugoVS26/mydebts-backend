@@ -4,6 +4,7 @@ import DebtsController from '../DebtsController.js';
 import { debtsMock } from '../../mocks/debtsMock.js';
 import CustomError from '../../../../server/middlewares/errors/CustomError/CustomError.js';
 import DebtsMongooseRepository from '../../repository/DebtsRepository.js';
+import { AuthRequest } from '../../../auth/middlewares/authMiddleware.js';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -13,7 +14,9 @@ describe('Given the method getDebts in DebtsController', () => {
   const debtsMockRepository: Pick<IDebtRepository, 'getDebts'> = {
     getDebts: jest.fn().mockResolvedValue(debtsMock),
   };
-  const req = {};
+  const userIdMock = { userId: 'mockUserId123' };
+
+  const req: Partial<AuthRequest> = userIdMock;
   const res: Pick<Response, 'status' | 'json'> = {
     status: jest.fn().mockReturnThis(),
     json: jest.fn(),
@@ -28,10 +31,11 @@ describe('Given the method getDebts in DebtsController', () => {
         debts: debtsMock,
       };
       const expectedStatusCode = 200;
+      const expectedUserId = 'mockUserId123';
 
-      await debtsController.getDebts(req as Request, res as Response);
+      await debtsController.getDebts(req as AuthRequest, res as Response);
 
-      expect(debtsMockRepository.getDebts).toHaveBeenCalled();
+      expect(debtsMockRepository.getDebts).toHaveBeenCalledWith(expectedUserId);
       expect(res.status).toHaveBeenCalledWith(expectedStatusCode);
       expect(res.json).toHaveBeenCalledWith(expectedJson);
     });
@@ -48,7 +52,7 @@ describe('Given the method getDebts in DebtsController', () => {
       const expectedCode = 500;
 
       try {
-        await debtsController.getDebts(req as Request, res as Response);
+        await debtsController.getDebts(req as AuthRequest, res as Response);
       } catch (error) {
         expect(error).toBeInstanceOf(CustomError);
         expect((error as CustomError).message).toBe(errorMessage);

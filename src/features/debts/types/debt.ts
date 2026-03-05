@@ -36,7 +36,7 @@ export type IDebtFilter = Partial<
 >;
 
 export interface IDebtRepository {
-  getDebts(): Promise<IDebt[]>;
+  getDebts(userId: string): Promise<IDebt[]>;
   getDebtsByFilter(filter: IDebtFilter, limit?: number): Promise<IDebt[]>;
   getDebtById(id: string): Promise<IDebt | null>;
   createDebt(debtData: IDebtCreate): Promise<IDebt>;

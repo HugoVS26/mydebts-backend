@@ -10,16 +10,15 @@ import { AuthRequest } from '../../auth/middlewares/authMiddleware.js';
 class DebtsController {
   constructor(private readonly debtRepository: IDebtRepository) {}
 
-  public async getDebts(_req: Request, res: Response): Promise<void> {
+  public async getDebts(req: AuthRequest, res: Response): Promise<void> {
     try {
-      const debts = await this.debtRepository.getDebts();
+      const { userId } = req;
+      if (!userId) throw new CustomError('User not authenticated', 401, 'Authentication required');
 
+      const debts = await this.debtRepository.getDebts(userId);
       res.status(200).json({ message: 'Debts fetched succesfully!', debts });
     } catch (error) {
-      if (error instanceof mongoose.Error.ValidationError) {
-        throw error;
-      }
-
+      if (error instanceof mongoose.Error.ValidationError) throw error;
       this.handleError(error, 'Error fetching debts', 'Could not get debts');
     }
   }
