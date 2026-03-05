@@ -6,8 +6,12 @@ import { IDebt, IDebtCreate, IDebtFilter, IDebtRepository } from '../types/debt.
 class DebtRepository implements IDebtRepository {
   private populateFields = '_id firstName lastName displayName email role';
 
-  public async getDebts(): Promise<IDebt[]> {
-    return await Debt.find({})
+  public async getDebts(userId: string): Promise<IDebt[]> {
+    const objectId = new mongoose.Types.ObjectId(userId);
+
+    return Debt.find({
+      $or: [{ creditor: objectId }, { debtor: objectId }],
+    })
       .sort({ createdAt: -1 })
       .limit(20)
       .populate('debtor', this.populateFields)
