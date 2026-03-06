@@ -6,7 +6,7 @@ import Debt from '../features/debts/models/debt.js';
 const debug = debugCreator('jobs:overdue-debts');
 
 export const startUpdateUnpaidToOverdueJob = (): void => {
-  cron.schedule(' 0 0 * * *', async () => {
+  cron.schedule('0 0 * * *', async () => {
     const startTime = Date.now();
     debug(chalk.blue('[CRON] Running overdue debts check...'));
 
