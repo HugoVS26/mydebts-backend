@@ -8,6 +8,7 @@ class DebtRepository implements IDebtRepository {
 
   public async getDebts(userId: string): Promise<IDebt[]> {
     const objectId = new mongoose.Types.ObjectId(userId);
+    await this.updateOverdueDebts(objectId);
 
     return Debt.find({
       $or: [{ creditor: objectId }, { debtor: objectId }],
@@ -18,6 +19,20 @@ class DebtRepository implements IDebtRepository {
       .populate('creditor', this.populateFields)
       .lean()
       .exec();
+  }
+
+  private async updateOverdueDebts(userId: mongoose.Types.ObjectId): Promise<void> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    await Debt.updateMany(
+      {
+        $or: [{ creditor: userId }, { debtor: userId }],
+        status: 'unpaid',
+        dueDate: { $lt: today },
+      },
+      { $set: { status: 'overdue', updatedAt: new Date() } }
+    );
   }
 
   public async getDebtsByFilter(filter: IDebtFilter = {}): Promise<IDebt[]> {
