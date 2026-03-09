@@ -14,7 +14,8 @@ export class SharedDebtLinksService {
     if (!debt) throw new CustomError('Debt not found', 404, 'Debt not found');
 
     const token = crypto.randomBytes(32).toString('hex');
-    await this.sharedDebtLinksRepository.create(token, debt, userId);
+    const snapshot = JSON.parse(JSON.stringify(debt));
+    await this.sharedDebtLinksRepository.create(token, snapshot, userId);
 
     return token;
   }
