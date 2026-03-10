@@ -1,13 +1,20 @@
 import Joi from 'joi';
 import mongoose from 'mongoose';
 
+const nameRegex = /^[a-zA-ZÀ-ÿ\u00f1\u00d1\s\-']+$/;
+
 const objectIdOrString = Joi.string()
   .required()
   .custom((value, helpers) => {
     if (mongoose.Types.ObjectId.isValid(value) && value.length === 24) {
       return value;
     }
-    if (typeof value === 'string' && value.trim().length > 0) {
+    if (
+      typeof value === 'string' &&
+      value.trim().length >= 1 &&
+      value.trim().length <= 50 &&
+      nameRegex.test(value)
+    ) {
       return value;
     }
     return helpers.error('string.invalid');
@@ -16,22 +23,24 @@ const objectIdOrString = Joi.string()
 export const createDebtSchema = Joi.object({
   debtor: objectIdOrString.messages({
     'any.required': 'Debtor is required',
-    'string.invalid': 'Debtor must be either a valid MongoDB ObjectId or a name',
+    'string.invalid':
+      'Debtor must be a valid user or a name between 1 and 50 characters with valid characters',
   }),
 
   creditor: objectIdOrString.messages({
     'any.required': 'Creditor is required',
-    'string.invalid': 'Creditor must be either a valid MongoDB ObjectId or a name',
+    'string.invalid':
+      'Creditor must be a valid user or a name between 1 and 50 characters with valid characters',
   }),
 
-  amount: Joi.number().required().min(1).max(10_000_000).messages({
+  amount: Joi.number().required().min(0.01).max(10_000_000).messages({
     'any.required': 'Amount is required',
-    'number.min': 'Amount must be positive',
+    'number.min': 'Amount must be at least 0.01',
     'number.max': 'Amount must be less than 10 million',
   }),
 
   description: Joi.string().trim().min(1).max(100).messages({
-    'string.min': 'Description must have more than 1 character',
+    'string.min': 'Description must have at least 1 character',
     'string.max': 'Description must be under 100 characters',
   }),
 
